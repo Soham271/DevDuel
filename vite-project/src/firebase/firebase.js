@@ -4,13 +4,13 @@ import { getAuth } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBwpQRHWdpbiCT4Ig4wimZ253kKlxq3PMo",
-  authDomain: "jobautofiller.firebaseapp.com",
-  projectId: "jobautofiller",
-  storageBucket: "jobautofiller.firebasestorage.app",
-  messagingSenderId: "98904350761",
-  appId: "1:98904350761:web:df6d7f8c3385bd9222fc38",
-  measurementId: "G-NPNJJ3F51L",
+  apiKey: "AIzaSyBpqjBaP_nu8DOu5voDbtSqrJVvc84cv24",
+  authDomain: "devduel-8871a.firebaseapp.com",
+  projectId: "devduel-8871a",
+  storageBucket: "devduel-8871a.firebasestorage.app",
+  messagingSenderId: "1081091289266",
+  appId: "1:1081091289266:web:3ed4f1189c83e6354dd9ab",
+  measurementId: "G-9PDGXL30LL",
 };
 
 const app = initializeApp(firebaseConfig);

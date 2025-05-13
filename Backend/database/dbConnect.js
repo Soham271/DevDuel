@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 const dbconnect = () => {
   return mongoose
-    .connect("mongodb://127.0.0.1:27017/DevDuel", {
+    .connect(process.env.MONGO_URL, {
       // Ensure correct connection string
       useNewUrlParser: true,
       useUnifiedTopology: true,
