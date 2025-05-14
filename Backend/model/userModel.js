@@ -19,8 +19,15 @@ const userSchema = mongoose.Schema({
     minLength: [8, "  max is 16"],
     select: false,
   },
-  
+
+  phone: {
+    type: Number,
+    unique: true,
+    required: [true, "Please enter your phone number"],
   },
+
+
+},
 );
 // Hash Pass before Save
 userSchema.pre("save", async function (next) {

@@ -1,6 +1,18 @@
- @tailwind base;
+/* globals.css or index.css */
+@tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+:root {
+  --radius: 0.5rem; /* Or any default value */
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --primary: 240 5.9% 10%;
+  --primary-foreground: 0 0% 98%;
+  /* ... Add others like --muted, --border, etc., based on your theme */
+}
 
 
 /* 
