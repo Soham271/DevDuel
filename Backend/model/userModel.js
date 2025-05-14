@@ -21,7 +21,7 @@ const userSchema = mongoose.Schema({
   },
   
   },
-});
+);
 // Hash Pass before Save
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
