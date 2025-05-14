@@ -19,21 +19,7 @@ const userSchema = mongoose.Schema({
     minLength: [8, "  max is 16"],
     select: false,
   },
-  avatar: {
-    public_id: {
-      type: String,
-    },
-    url: {
-      type: String,
-    },
-  },
-  resume: {
-    public_id: {
-      type: String,
-    },
-    url: {
-      type: String,
-    },
+  
   },
 });
 // Hash Pass before Save
