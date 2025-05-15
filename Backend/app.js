@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import dbConnect from "./database/dbConnect.js";
 import userRoutes from "./router/userrouter.js";
+import contestRoutes from "./router/contestrouter.js";
 
 import path from "path";
 
@@ -30,6 +31,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/contest", contestRoutes);
+
 
 dbConnect();
 
