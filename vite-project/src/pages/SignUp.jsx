@@ -4,6 +4,8 @@ import { toast } from "react-toastify";
 import styled from 'styled-components';
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
 
 
 const SignUp = () => {
@@ -53,6 +55,7 @@ const SignUp = () => {
         formattedPhone = `${match[1]} ${match[2].replace(/^\s+/, "")}`;
       }
     }
+    NProgress.start();
     try {
       const response = await fetch("http://localhost:3004/api/v1/user/signup", {
         method: "POST",
@@ -73,6 +76,8 @@ const SignUp = () => {
     } catch (error) {
       toast.error(error.message || "Something went wrong.");
       console.error("Signup error:", error);
+    } finally {
+      NProgress.done();
     }
   };
 
@@ -557,6 +562,21 @@ const StyledWrapper = styled.div`
   .modal-content .close-modal:hover {
     background: #0055ff;
   }
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -65%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -55%);
+  }
+}
+
+.login-box {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+}
 
     .terms-wrapper {
     display: flex;

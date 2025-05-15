@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import styled from "styled-components";
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+
 
 import {
   Card,
@@ -32,9 +35,11 @@ const Login = () => {
 
   // JWT Email/Password Login
   const handleJWTLogin = () => {
+     NProgress.start();
     try {
       dispatch(login(user.email, user.password));
     } catch (err) {
+      NProgress.done();
       toast.error(err || "login Failed");
     }
   };
@@ -53,6 +58,7 @@ const Login = () => {
       toast.error("Google sign-in failed");
     }
   };
+
 
   useEffect(() => {
     if (error) {
@@ -329,6 +335,22 @@ const StyledWrapper = styled.div`
     cursor: pointer;
     text-align: center;
   }
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -65%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -55%);
+  }
+}
+
+.login-box {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+}
+
 
   .google-login-btn svg {
     margin-right: 10px;
