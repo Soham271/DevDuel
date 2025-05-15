@@ -1,20 +1,18 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-<<<<<<< HEAD
+
 import styled from "styled-components";
 import "react-phone-number-input/style.css";
-import PhoneInput from "react-phone-number-input";
+
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
-=======
-import styled from 'styled-components';
-import 'react-phone-number-input/style.css';
-import PhoneInput from 'react-phone-number-input';
-import NProgress from 'nprogress';
-import 'nprogress/nprogress.css';
 
->>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
+
+import PhoneInput from 'react-phone-number-input';
+
+
+
 
 const SignUp = () => {
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
