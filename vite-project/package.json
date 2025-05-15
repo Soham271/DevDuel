@@ -10,10 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@chakra-ui/icons": "^2.2.4",
-=======
->>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
     "@chakra-ui/react": "^3.18.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -28,16 +25,11 @@
     "core-js-pure": "^3.42.0",
     "firebase": "^11.6.0",
     "firebase-tools": "^14.1.0",
-<<<<<<< HEAD
     "framer-motion": "^12.11.4",
-    "lucide-react": "^0.473.0",
-    "motion": "^12.4.2",
-=======
-    "framer-motion": "^12.11.3",
+    "hamburger-react": "^2.5.2",
     "lucide-react": "^0.473.0",
     "motion": "^12.4.2",
     "next-themes": "^0.4.6",
->>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
     "nprogress": "^0.2.0",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",

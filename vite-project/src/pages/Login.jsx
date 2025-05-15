@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import styled from "styled-components";
-import NProgress from 'nprogress';
-import 'nprogress/nprogress.css';
+
 
 
 
@@ -36,7 +35,7 @@ const Login = () => {
 
   // JWT Email/Password Login
   const handleJWTLogin = () => {
-     NProgress.start();
+   
     try {
       dispatch(login(user.email, user.password));
     } catch (err) {

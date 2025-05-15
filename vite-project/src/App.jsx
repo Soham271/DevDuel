@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
+import CreateContest from "./pages/CreateContest";
 
 
 const App = () => {
@@ -21,6 +22,11 @@ const App = () => {
     {
       path: "/signup",
       element: <SignUp />,
+    }
+    ,
+    {
+      path:"/create-contest",
+      element:<CreateContest/>
     }
   ]);
 

@@ -4,8 +4,7 @@ const dbconnect = () => {
   return mongoose
     .connect(process.env.MONGO_URL, {
       // Ensure correct connection string
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+     
     })
     .then(() => console.log("MongoDB connected successfully"))
     .catch((error) => {
