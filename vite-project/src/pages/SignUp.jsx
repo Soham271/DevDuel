@@ -572,6 +572,27 @@ const StyledWrapper = styled.div`
     transform: translate(-50%, -55%);
   }
 }
+  .terms-wrapper input[type="checkbox"]:checked::after {
+  content: '✔';
+  color: #fff;
+  font-size: 12px;
+  position: absolute;
+  left: 3px;
+  top: -1px;
+  animation: scaleCheck 0.3s ease forwards;
+}
+
+@keyframes scaleCheck {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 
 .login-box {
   animation: fadeInUp 0.8s ease-out forwards;
