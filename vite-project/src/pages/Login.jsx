@@ -2,8 +2,14 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import styled from "styled-components";
+<<<<<<< HEAD
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+=======
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
 
 import {
   Card,
@@ -34,7 +40,11 @@ const Login = () => {
 
   // JWT Email/Password Login
   const handleJWTLogin = () => {
+<<<<<<< HEAD
     NProgress.start();
+=======
+     NProgress.start();
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
     try {
       dispatch(login(user.email, user.password));
     } catch (err) {
@@ -57,6 +67,7 @@ const Login = () => {
       toast.error("Google sign-in failed");
     }
   };
+
 
   useEffect(() => {
     if (error) {
@@ -143,7 +154,11 @@ const Login = () => {
             Login with Google
           </button>
         </form>
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
         <p className="mt-4 text-center text-sm text-gray-400">
           New Here?{" "}
           <a href="/signup" className="a2">
@@ -342,6 +357,7 @@ const StyledWrapper = styled.div`
     font-size: 16px;
     cursor: pointer;
     text-align: center;
+<<<<<<< HEAD
   }
   @keyframes fadeInUp {
     0% {
@@ -358,6 +374,25 @@ const StyledWrapper = styled.div`
     animation: fadeInUp 0.8s ease-out forwards;
     opacity: 0;
   }
+=======
+  }
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -65%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -55%);
+  }
+}
+
+.login-box {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
 
   .google-login-btn svg {
     margin-right: 10px;

@@ -1,11 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+<<<<<<< HEAD
 import styled from "styled-components";
 import "react-phone-number-input/style.css";
 import PhoneInput from "react-phone-number-input";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+=======
+import styled from 'styled-components';
+import 'react-phone-number-input/style.css';
+import PhoneInput from 'react-phone-number-input';
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
+
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
 
 const SignUp = () => {
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
@@ -625,6 +634,7 @@ const StyledWrapper = styled.div`
   .modal-content .close-modal:hover {
     background: #0055ff;
   }
+<<<<<<< HEAD
   @keyframes fadeInUp {
     0% {
       opacity: 0;
@@ -635,6 +645,23 @@ const StyledWrapper = styled.div`
       transform: translate(-50%, -55%);
     }
   }
+=======
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -65%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -55%);
+  }
+}
+
+.login-box {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+}
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
 
   .login-box {
     animation: fadeInUp 0.8s ease-out forwards;
