@@ -1,12 +1,20 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+<<<<<<< HEAD
+import styled from "styled-components";
+import "react-phone-number-input/style.css";
+import PhoneInput from "react-phone-number-input";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
+=======
 import styled from 'styled-components';
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
 
 const SignUp = () => {
   const [isPhoneFocused, setIsPhoneFocused] = useState(false);
@@ -62,7 +70,13 @@ const SignUp = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fullName, email, password, confirmationpassword, phone }),
+        body: JSON.stringify({
+          fullName,
+          email,
+          password,
+          confirmationpassword,
+          phone,
+        }),
       });
 
       const data = await response.json();
@@ -108,7 +122,13 @@ const SignUp = () => {
           </div>
 
           <div className="user-box phone-wrapper">
-            <label className={(user.phone?.length > 0 || isPhoneFocused) ? "active" : ""}>Phone</label>
+            <label
+              className={
+                user.phone?.length > 0 || isPhoneFocused ? "active" : ""
+              }
+            >
+              Phone
+            </label>
             <div className="phone-input-inner">
               <PhoneInput
                 international
@@ -172,7 +192,6 @@ const SignUp = () => {
             </span>
           </div>
 
-
           <div className="submit-button-wrapper">
             <button
               type="submit"
@@ -202,28 +221,53 @@ const SignUp = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Terms and Conditions</h2>
             <ul className="terms-list">
-              <li><strong>User Responsibilities:</strong> You must provide accurate, complete, and updated registration information.</li>
-              <li><strong>Privacy & Data:</strong> We securely store your information and do not share or sell data without your consent.</li>
-              <li><strong>Platform Usage:</strong> Use of the platform must comply with legal guidelines and community standards.</li>
-              <li><strong>No Automation:</strong> Scraping, automation, or unauthorized access to the system is prohibited.</li>
-              <li><strong>Intellectual Property:</strong> All branding, code, and content are protected by copyright laws.</li>
-              <li><strong>Limitation of Liability:</strong> We are not responsible for indirect damages or losses caused by usage.</li>
-              <li><strong>Policy Updates:</strong> We may revise these terms periodically. Continued use implies agreement to updated terms.</li>
-              <li><strong>Account Suspension:</strong> Breach of these terms may lead to suspension or termination of your account.</li>
+              <li>
+                <strong>User Responsibilities:</strong> You must provide
+                accurate, complete, and updated registration information.
+              </li>
+              <li>
+                <strong>Privacy & Data:</strong> We securely store your
+                information and do not share or sell data without your consent.
+              </li>
+              <li>
+                <strong>Platform Usage:</strong> Use of the platform must comply
+                with legal guidelines and community standards.
+              </li>
+              <li>
+                <strong>No Automation:</strong> Scraping, automation, or
+                unauthorized access to the system is prohibited.
+              </li>
+              <li>
+                <strong>Intellectual Property:</strong> All branding, code, and
+                content are protected by copyright laws.
+              </li>
+              <li>
+                <strong>Limitation of Liability:</strong> We are not responsible
+                for indirect damages or losses caused by usage.
+              </li>
+              <li>
+                <strong>Policy Updates:</strong> We may revise these terms
+                periodically. Continued use implies agreement to updated terms.
+              </li>
+              <li>
+                <strong>Account Suspension:</strong> Breach of these terms may
+                lead to suspension or termination of your account.
+              </li>
             </ul>
-            <button className="close-modal" onClick={() => setShowModal(false)}>Close</button>
+            <button className="close-modal" onClick={() => setShowModal(false)}>
+              Close
+            </button>
           </div>
         </div>
       )}
-
     </StyledWrapper>
   );
 };
 
 const StyledWrapper = styled.div`
-
   min-height: 100vh;
-  background: url('https://images.unsplash.com/photo-1612831668413-7b8d25154f2b?auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+  background: url("https://images.unsplash.com/photo-1612831668413-7b8d25154f2b?auto=format&fit=crop&w=1950&q=80")
+    no-repeat center center/cover;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -236,8 +280,6 @@ const StyledWrapper = styled.div`
     background: rgba(0, 0, 0, 0.6);
     z-index: 0;
   }
-
- 
 
   .login-box {
     position: absolute;
@@ -304,15 +346,15 @@ const StyledWrapper = styled.div`
     margin-bottom: 30px;
   }
 
- .phone-wrapper label {
-  position: static;      /* Remove absolute positioning */
-  display: block;
-  margin-bottom: 6px;    /* Space between label and input */
-  font-size: 16px;
-  color: #fff;
-  pointer-events: none;
-  transition: none;
-}
+  .phone-wrapper label {
+    position: static; /* Remove absolute positioning */
+    display: block;
+    margin-bottom: 6px; /* Space between label and input */
+    font-size: 16px;
+    color: #fff;
+    pointer-events: none;
+    transition: none;
+  }
 
   .phone-wrapper label.active {
     top: -20px;
@@ -416,15 +458,47 @@ const StyledWrapper = styled.div`
     animation-delay: 1.125s;
   }
 
-  @keyframes btn-anim1 { 0% { left: -100%; } 50%, 100% { left: 100%; } }
-  @keyframes btn-anim2 { 0% { top: -100%; } 50%, 100% { top: 100%; } }
-  @keyframes btn-anim3 { 0% { right: -100%; } 50%, 100% { right: 100%; } }
-  @keyframes btn-anim4 { 0% { bottom: -100%; } 50%, 100% { bottom: 100%; } }
+  @keyframes btn-anim1 {
+    0% {
+      left: -100%;
+    }
+    50%,
+    100% {
+      left: 100%;
+    }
+  }
+  @keyframes btn-anim2 {
+    0% {
+      top: -100%;
+    }
+    50%,
+    100% {
+      top: 100%;
+    }
+  }
+  @keyframes btn-anim3 {
+    0% {
+      right: -100%;
+    }
+    50%,
+    100% {
+      right: 100%;
+    }
+  }
+  @keyframes btn-anim4 {
+    0% {
+      bottom: -100%;
+    }
+    50%,
+    100% {
+      bottom: 100%;
+    }
+  }
 
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -459,7 +533,7 @@ const StyledWrapper = styled.div`
     cursor: pointer;
   }
 
-    .terms-wrapper {
+  .terms-wrapper {
     display: flex;
     align-items: flex-start;
     gap: 10px;
@@ -487,7 +561,7 @@ const StyledWrapper = styled.div`
   }
 
   .terms-wrapper input[type="checkbox"]:checked::after {
-    content: '✔';
+    content: "✔";
     color: #fff;
     font-size: 12px;
     position: absolute;
@@ -505,8 +579,6 @@ const StyledWrapper = styled.div`
   .terms-link:hover {
     color: #66f;
   }
-
-  
 
   .modal-overlay {
     position: fixed;
@@ -562,6 +634,18 @@ const StyledWrapper = styled.div`
   .modal-content .close-modal:hover {
     background: #0055ff;
   }
+<<<<<<< HEAD
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -65%);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -55%);
+    }
+  }
+=======
 @keyframes fadeInUp {
   0% {
     opacity: 0;
@@ -598,8 +682,14 @@ const StyledWrapper = styled.div`
   animation: fadeInUp 0.8s ease-out forwards;
   opacity: 0;
 }
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
 
-    .terms-wrapper {
+  .login-box {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
+  }
+
+  .terms-wrapper {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -626,17 +716,15 @@ const StyledWrapper = styled.div`
     --size: 20px;
     width: var(--size);
     height: var(--size);
-    background-color: #191A1E;
+    background-color: #191a1e;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 3px;
-    box-shadow:
-      1.5px 1.5px 3px #0e0e0e,
-      -1.5px -1.5px 3px rgba(95, 94, 94, 0.25),
-      inset 0px 0px 0px #0e0e0e,
+    box-shadow: 1.5px 1.5px 3px #0e0e0e,
+      -1.5px -1.5px 3px rgba(95, 94, 94, 0.25), inset 0px 0px 0px #0e0e0e,
       inset 0px -0px 0px #5f5e5e;
     transition: all 0.3s ease;
   }
@@ -645,10 +733,8 @@ const StyledWrapper = styled.div`
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    box-shadow:
-      1.5px 1.5px 3px #0e0e0e,
-      -1.5px -1.5px 3px rgba(95, 94, 94, 0.25),
-      inset 0px 0px 0px #0e0e0e,
+    box-shadow: 1.5px 1.5px 3px #0e0e0e,
+      -1.5px -1.5px 3px rgba(95, 94, 94, 0.25), inset 0px 0px 0px #0e0e0e,
       inset 0px -0px 0px #5f5e5e;
     transition: all 0.3s ease;
     padding: 3px;
@@ -663,64 +749,58 @@ const StyledWrapper = styled.div`
   }
 
   .container input:checked + .checkmark {
-    box-shadow:
-      inset 1.5px 1.5px 3px #0e0e0e,
-      inset -1.5px -1.5px 3px #5f5e5e;
+    box-shadow: inset 1.5px 1.5px 3px #0e0e0e, inset -1.5px -1.5px 3px #5f5e5e;
   }
 
   .container input:checked + .checkmark svg {
     opacity: 1;
   }
-.modal-content {
-  background: #fff;
-  padding: 40px;
-  border-radius: 12px;
-  width: 600px; /* Increased width */
-  max-height: 80vh;
-  overflow-y: auto;
-  color: #000;
-  text-align: left;
-  position: relative;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
+  .modal-content {
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    width: 600px; /* Increased width */
+    max-height: 80vh;
+    overflow-y: auto;
+    color: #000;
+    text-align: left;
+    position: relative;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
 
-.modal-content h2 {
-  margin-top: 0;
-  font-size: 24px;
-  margin-bottom: 20px;
-}
+  .modal-content h2 {
+    margin-top: 0;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
 
-.terms-list {
-  padding-left: 20px;
-  list-style-type: disc;
-  font-size: 15px;
-  line-height: 1.6;
-}
+  .terms-list {
+    padding-left: 20px;
+    list-style-type: disc;
+    font-size: 15px;
+    line-height: 1.6;
+  }
 
-.terms-list li {
-  margin-bottom: 12px;
-}
+  .terms-list li {
+    margin-bottom: 12px;
+  }
 
-.close-modal {
-  margin-top: 25px;
-  padding: 10px 25px;
-  background: #000;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 14px;
-  transition: background 0.3s ease;
-}
+  .close-modal {
+    margin-top: 25px;
+    padding: 10px 25px;
+    background: #000;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: background 0.3s ease;
+  }
 
-.close-modal:hover {
-  background: #333;
-}
-
+  .close-modal:hover {
+    background: #333;
+  }
 `;
-
-
-
 
 export default SignUp;

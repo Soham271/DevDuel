@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import styled from "styled-components";
+import NProgress from 'nprogress';
+import 'nprogress/nprogress.css';
 
 
 
@@ -34,7 +36,7 @@ const Login = () => {
 
   // JWT Email/Password Login
   const handleJWTLogin = () => {
-    
+     NProgress.start();
     try {
       dispatch(login(user.email, user.password));
     } catch (err) {
@@ -83,7 +85,8 @@ const Login = () => {
           onSubmit={(e) => {
             e.preventDefault();
             handleJWTLogin();
-          }}>
+          }}
+        >
           <div className="user-box">
             <input
               required
@@ -108,13 +111,21 @@ const Login = () => {
 
           <div className="button-group">
             <button type="submit" className="submit-button">
-              <span></span><span></span><span></span><span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
               Login
             </button>
           </div>
 
           <button onClick={handleGoogleLogin} className="google-login-btn">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
               <path
                 fill="#4285F4"
                 d="M21.35 11.1H12v2.82h5.37c-.23 1.3-.93 2.4-1.98 3.14v2.6h3.2c1.88-1.73 2.96-4.28 2.96-7.27 0-.64-.06-1.26-.2-1.85z"
@@ -135,7 +146,7 @@ const Login = () => {
             Login with Google
           </button>
         </form>
-        
+
         <p className="mt-4 text-center text-sm text-gray-400">
           New Here?{" "}
           <a href="/signup" className="a2">
@@ -149,7 +160,8 @@ const Login = () => {
 
 const StyledWrapper = styled.div`
   min-height: 100vh;
-  background: url('https://images.unsplash.com/photo-1612831668413-7b8d25154f2b?auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+  background: url("https://images.unsplash.com/photo-1612831668413-7b8d25154f2b?auto=format&fit=crop&w=1950&q=80")
+    no-repeat center center/cover;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -333,6 +345,24 @@ const StyledWrapper = styled.div`
     font-size: 16px;
     cursor: pointer;
     text-align: center;
+<<<<<<< HEAD
+  }
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -65%);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -55%);
+    }
+  }
+
+  .login-box {
+    animation: fadeInUp 0.8s ease-out forwards;
+    opacity: 0;
+  }
+=======
   }
 @keyframes fadeInUp {
   0% {
@@ -350,6 +380,7 @@ const StyledWrapper = styled.div`
   opacity: 0;
 }
 
+>>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
 
   .google-login-btn svg {
     margin-right: 10px;
