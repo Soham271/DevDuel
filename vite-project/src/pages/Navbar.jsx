@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useSelector } from "react-redux";
-import { Link, useLocation } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Avatar from "react-avatar";
 import logoimage from "../assets/image.jpg";
+import { logout } from "../Store/UserSlice";
 
 const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -11,6 +12,8 @@ const Navbar = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const dropdownRef = useRef();
   const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
@@ -36,6 +39,11 @@ const Navbar = () => {
     document.documentElement.classList.toggle("dark", newMode);
   };
 
+  const handleLogout = async () => {
+    await dispatch(logout());
+    navigate("/");
+  };
+
   const navItems = [
     { name: "Home", path: "/home" },
     { name: "Create Contest", path: "/create-contest" },
@@ -46,7 +54,6 @@ const Navbar = () => {
     { name: "Profile", path: "/profile" },
     { name: "Edit Profile", path: "/edit-profile" },
     { name: "Leaderboard", path: "/leaderboard" },
-    { name: "Logout", path: "/logout" },
   ];
 
   return (
@@ -62,8 +69,7 @@ const Navbar = () => {
           <img
             src={logoimage}
             alt="Logo"
-            className="h-12 w-12 rounded-full object-cover cursor-pointer 
-                       hover:scale-105 hover:shadow-xl transition-transform duration-300"
+            className="h-12 w-12 rounded-full object-cover cursor-pointer hover:scale-105 hover:shadow-xl transition-transform duration-300"
           />
         </Link>
 
@@ -94,24 +100,20 @@ const Navbar = () => {
             title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
             {isDarkMode ? (
-              // Sun Icon (inline SVG)
               <svg
-                xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 text-yellow-400"
-                viewBox="0 0 20 20"
                 fill="currentColor"
+                viewBox="0 0 20 20"
               >
-                <path d="M10 3.75a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5A.75.75 0 0110 3.75zm0 11.5a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5a.75.75 0 01.75-.75zM3.75 10a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75zm11.5 0a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75zM6.22 6.22a.75.75 0 011.06 0l.35.35a.75.75 0 11-1.06 1.06l-.35-.35a.75.75 0 010-1.06zm6.19 6.19a.75.75 0 011.06 0l.35.35a.75.75 0 11-1.06 1.06l-.35-.35a.75.75 0 010-1.06zM6.22 13.78a.75.75 0 010-1.06l.35-.35a.75.75 0 011.06 1.06l-.35.35a.75.75 0 01-1.06 0zm6.19-6.19a.75.75 0 010-1.06l.35-.35a.75.75 0 111.06 1.06l-.35.35a.75.75 0 01-1.06 0zM10 7.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" />
+                <path d="M10 3a1 1 0 011 1v1a1 1 0 01-2 0V4a1 1 0 011-1zm4.22 1.78a1 1 0 011.42 1.42l-.7.7a1 1 0 11-1.42-1.42l.7-.7zM17 9a1 1 0 100 2h-1a1 1 0 100-2h1zm-1.78 6.22a1 1 0 10-1.42 1.42l.7.7a1 1 0 101.42-1.42l-.7-.7zM10 16a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zm-6.22-1.78a1 1 0 00-1.42 1.42l.7.7a1 1 0 101.42-1.42l-.7-.7zM4 10a1 1 0 100-2H3a1 1 0 000 2h1zm1.78-6.22a1 1 0 10-1.42-1.42l-.7.7a1 1 0 101.42 1.42l.7-.7zM10 6a4 4 0 100 8 4 4 0 000-8z" />
               </svg>
             ) : (
-              // Moon Icon (inline SVG)
               <svg
-                xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 text-gray-800 dark:text-gray-200"
-                viewBox="0 0 20 20"
                 fill="currentColor"
+                viewBox="0 0 20 20"
               >
-                <path d="M17.293 13.293a8 8 0 01-10.586-10.586 8.001 8.001 0 1010.586 10.586z" />
+                <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
               </svg>
             )}
           </button>
@@ -134,26 +136,31 @@ const Navbar = () => {
             <AnimatePresence>
               {showDropdown && (
                 <motion.div
-                  key="dropdown"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-12 right-0 bg-white dark:bg-gray-800 border dark:border-gray-700 
-                             rounded-xl shadow-lg w-48 z-50"
+                  className="absolute top-12 right-0 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl shadow-lg w-48 z-50"
                 >
                   <ul className="py-2">
                     {dropdownOptions.map((opt, i) => (
                       <li key={i}>
                         <Link
                           to={opt.path}
-                          className="block px-4 py-2 hover:bg-gradient-to-r from-indigo-100 to-indigo-200 
-                                     dark:hover:from-indigo-700 dark:hover:to-indigo-600 rounded-md transition duration-200"
+                          className="block px-4 py-2 hover:bg-gradient-to-r from-indigo-100 to-indigo-200 dark:hover:from-indigo-700 dark:hover:to-indigo-600 rounded-md transition duration-200"
                         >
                           {opt.name}
                         </Link>
                       </li>
                     ))}
+                    <li>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full text-left px-4 py-2 hover:bg-gradient-to-r from-red-100 to-red-200 dark:hover:from-red-700 dark:hover:to-red-600 rounded-md transition duration-200"
+                      >
+                        Logout
+                      </button>
+                    </li>
                   </ul>
                 </motion.div>
               )}
@@ -168,8 +175,8 @@ const Navbar = () => {
             >
               <svg
                 className="w-6 h-6"
-                fill="none"
                 stroke="currentColor"
+                fill="none"
                 strokeWidth="2"
                 viewBox="0 0 24 24"
               >
