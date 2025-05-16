@@ -31,8 +31,7 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/contest", contestRoutes);
-
+app.use("/api/v1/user", contestRoutes);
 
 dbConnect();
 
