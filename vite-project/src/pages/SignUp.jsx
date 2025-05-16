@@ -395,16 +395,16 @@ const SignUp = () => {
 
         /* Fix for the country flag size */
         .PhoneInputCountryIcon {
-          width: 19px !important;
-          height: 19px !important;
+          width: 6px !important;
+          height: 6px !important;
           box-sizing: content-box;
           margin-right: 10px;
           overflow: hidden;
         }
 
         .PhoneInputCountryIcon img {
-          width: 19px;
-          height: 19px;
+          width: 6px;
+          height: 6px;
           object-fit: cover;
           display: block;
           border-radius: 1px;

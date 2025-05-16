@@ -344,7 +344,7 @@ const StyledWrapper = styled.div`
     font-size: 16px;
     cursor: pointer;
     text-align: center;
-<<<<<<< HEAD
+
   }
   @keyframes fadeInUp {
     0% {
@@ -361,7 +361,7 @@ const StyledWrapper = styled.div`
     animation: fadeInUp 0.8s ease-out forwards;
     opacity: 0;
   }
-=======
+
   }
 @keyframes fadeInUp {
   0% {
@@ -379,7 +379,7 @@ const StyledWrapper = styled.div`
   opacity: 0;
 }
 
->>>>>>> 26f13a2e8a7d0c453847fe6637ae5ec2e019eacd
+
 
   .google-login-btn svg {
     margin-right: 10px;
