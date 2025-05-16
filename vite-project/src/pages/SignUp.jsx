@@ -69,7 +69,7 @@ const SignUp = () => {
           email,
           password,
           confirmationpassword,
-          phone,
+          phone :formattedPhone,
         }),
       });
 
@@ -90,7 +90,9 @@ const SignUp = () => {
   };
 
   return (
-    <StyledWrapper>
+    
+   
+     <StyledWrapper>
       <div className="login-box">
         <p>Sign Up</p>
         <form onSubmit={collectData}>
@@ -255,6 +257,8 @@ const SignUp = () => {
         </div>
       )}
     </StyledWrapper>
+   
+   
   );
 };
 
