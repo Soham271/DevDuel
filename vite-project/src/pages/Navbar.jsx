@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import Avatar from "react-avatar";
-import { MdDarkMode, MdLightMode } from "react-icons/md"; 
 import logoimage from "../assets/image.jpg";
 
 const Navbar = () => {
@@ -14,14 +13,12 @@ const Navbar = () => {
   const location = useLocation();
   const user = useSelector((state) => state.user.user);
 
-  // Load dark mode from localStorage
   useEffect(() => {
     const darkPreference = localStorage.getItem("theme") === "dark";
     setIsDarkMode(darkPreference);
     document.documentElement.classList.toggle("dark", darkPreference);
   }, []);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -32,7 +29,6 @@ const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Toggle dark mode
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
@@ -45,6 +41,7 @@ const Navbar = () => {
     { name: "Create Contest", path: "/create-contest" },
     { name: "Join Contest", path: "/join-contest" },
   ];
+
   const dropdownOptions = [
     { name: "Profile", path: "/profile" },
     { name: "Edit Profile", path: "/edit-profile" },
@@ -96,9 +93,27 @@ const Navbar = () => {
             className="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:scale-105 transition-transform"
             title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            {isDarkMode 
-              ? <MdLightMode size={20} className="text-yellow-400" /> 
-              : <MdDarkMode size={20} className="text-gray-800 dark:text-gray-200"/>}
+            {isDarkMode ? (
+              // Sun Icon (inline SVG)
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-yellow-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M10 3.75a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5A.75.75 0 0110 3.75zm0 11.5a.75.75 0 01.75.75v.5a.75.75 0 01-1.5 0v-.5a.75.75 0 01.75-.75zM3.75 10a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75zm11.5 0a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5a.75.75 0 01-.75-.75zM6.22 6.22a.75.75 0 011.06 0l.35.35a.75.75 0 11-1.06 1.06l-.35-.35a.75.75 0 010-1.06zm6.19 6.19a.75.75 0 011.06 0l.35.35a.75.75 0 11-1.06 1.06l-.35-.35a.75.75 0 010-1.06zM6.22 13.78a.75.75 0 010-1.06l.35-.35a.75.75 0 011.06 1.06l-.35.35a.75.75 0 01-1.06 0zm6.19-6.19a.75.75 0 010-1.06l.35-.35a.75.75 0 111.06 1.06l-.35.35a.75.75 0 01-1.06 0zM10 7.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" />
+              </svg>
+            ) : (
+              // Moon Icon (inline SVG)
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-gray-800 dark:text-gray-200"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M17.293 13.293a8 8 0 01-10.586-10.586 8.001 8.001 0 1010.586 10.586z" />
+              </svg>
+            )}
           </button>
 
           {/* Avatar Dropdown */}
