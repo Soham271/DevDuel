@@ -6,10 +6,8 @@ import cors from "cors";
 import dbConnect from "./database/dbConnect.js";
 import userRoutes from "./router/userrouter.js";
 import contestRoutes from "./router/contestrouter.js";
-
+import JoinbattleRoutes from "./router/JoinBattle.js";
 import path from "path";
-
-import fs from "fs";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -31,8 +29,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/user", contestRoutes);
-
+app.use("/api/v1/contenst", contestRoutes);
+app.use("/api/v1/joinBattle", JoinbattleRoutes);
 dbConnect();
 
 export default app;

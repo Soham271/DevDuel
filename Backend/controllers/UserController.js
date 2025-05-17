@@ -38,7 +38,9 @@ export const signup = catchAsyncErr(async (req, res, next) => {
   }
 
   if (password !== confirmationpassword) {
-    return next(new ErrorHandler("Password and Confirm Password do not match.", 400));
+    return next(
+      new ErrorHandler("Password and Confirm Password do not match.", 400)
+    );
   }
 
   const existingUser = await user.findOne({ email });
@@ -70,7 +72,9 @@ export const login = catchAsyncErr(async (req, res, next) => {
   const User = await user.findOne({ email }).select("+password");
 
   if (!User) {
-    return next(new ErrorHandler("Either Email or Password is incorrect.", 404));
+    return next(
+      new ErrorHandler("Either Email or Password is incorrect.", 404)
+    );
   }
 
   const isPasswordMatch = await User.comparePassword(password);
@@ -126,7 +130,9 @@ export const updatePassword = catchAsyncErr(async (req, res, next) => {
   }
 
   if (newpassword !== confirmationpassword) {
-    return next(new ErrorHandler("New Password and Confirm Password do not match", 404));
+    return next(
+      new ErrorHandler("New Password and Confirm Password do not match", 404)
+    );
   }
 
   User.password = newpassword;
@@ -169,7 +175,9 @@ export const forgetPassword = catchAsyncErr(async (req, res, next) => {
     User.resetPasswordExpire = undefined;
     await User.save({ validateBeforeSave: false });
 
-    return next(new ErrorHandler("Failed to send email. Try again later.", 500));
+    return next(
+      new ErrorHandler("Failed to send email. Try again later.", 500)
+    );
   }
 });
 

@@ -5,14 +5,12 @@ import axios from "axios";
 
 function CreateContest() {
   const user = useSelector((state) => state.user.user);
-
   const [CreateContestData, setCreateContestData] = useState({
     Title: "",
     Level: "",
     Duration: "",
     Language: "",
   });
-
   const [contestCode, setContestCode] = useState(null);
   const navigate = useNavigate();
 
@@ -23,7 +21,6 @@ function CreateContest() {
     const code = Math.floor(10000000 + Math.random() * 90000000);
     setContestCode(code);
 
-    // Add Code to the object being sent to backend
     const dataToSend = {
       ...CreateContestData,
       Code: code,
@@ -31,7 +28,7 @@ function CreateContest() {
 
     try {
       await axios.post(
-        "http://localhost:3004/api/v1/user/create-contest",
+        "http://localhost:3004/api/v1/contenst/create-contest",
         dataToSend,
         {
           headers: {
@@ -41,11 +38,51 @@ function CreateContest() {
         }
       );
 
-      // Navigate after successful creation
       navigate("/Join-Battle", { state: { contestCode: code } });
     } catch (err) {
       console.error("Error creating contest:", err);
     }
+  };
+
+  const styles = {
+    container: {
+      maxWidth: "400px",
+      margin: "auto",
+      padding: "2rem",
+      fontFamily: "Arial, sans-serif",
+      textAlign: "center",
+    },
+    heading: {
+      fontSize: "1.8rem",
+      marginBottom: "1.5rem",
+    },
+    form: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "1rem",
+    },
+    input: {
+      padding: "10px",
+      borderRadius: "6px",
+      border: "1px solid #ccc",
+      fontSize: "1rem",
+    },
+    button: {
+      padding: "10px",
+      fontSize: "1rem",
+      backgroundColor: "#000",
+      color: "#fff",
+      border: "none",
+      borderRadius: "6px",
+      cursor: "pointer",
+      marginTop: "1rem",
+    },
+    codeDisplay: {
+      marginTop: "1rem",
+      fontWeight: "bold",
+      fontSize: "1.2rem",
+      color: "#333",
+    },
   };
 
   return (
@@ -132,46 +169,5 @@ function CreateContest() {
     </div>
   );
 }
-
-const styles = {
-  container: {
-    maxWidth: "400px",
-    margin: "auto",
-    padding: "2rem",
-    fontFamily: "Arial, sans-serif",
-    textAlign: "center",
-  },
-  heading: {
-    fontSize: "1.8rem",
-    marginBottom: "1.5rem",
-  },
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "1rem",
-  },
-  input: {
-    padding: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    fontSize: "1rem",
-  },
-  button: {
-    padding: "10px",
-    fontSize: "1rem",
-    backgroundColor: "#000",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-    marginTop: "1rem",
-  },
-  codeDisplay: {
-    marginTop: "1rem",
-    fontWeight: "bold",
-    fontSize: "1.2rem",
-    color: "#333",
-  },
-};
 
 export default CreateContest;

@@ -41,6 +41,9 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await dispatch(logout());
+    localStorage.clear();
+    sessionStorage.clear();
+
     navigate("/");
   };
 

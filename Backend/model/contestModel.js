@@ -1,4 +1,3 @@
-// Backend/model/contestModel.js
 import mongoose from "mongoose";
 
 const Contestschema = new mongoose.Schema({
@@ -9,19 +8,44 @@ const Contestschema = new mongoose.Schema({
   Level: {
     type: String,
     required: true,
+    enum: ["easy", "medium", "hard"],
   },
   Duration: {
     type: String,
     required: true,
+    enum: ["5min", "10min", "20min", "30min", "40min", "50min", "1hr"],
   },
   Language: {
     type: String,
     required: true,
+    enum: ["C", "C++", "Java", "Python"],
   },
   Code: {
     type: Number,
     required: true,
     unique: true,
+  },
+  Questions: [
+    {
+      id: String,
+      title: String,
+      description: String,
+      difficulty: String,
+      inputFormat: String,
+      outputFormat: String,
+      sampleInput: String,
+      sampleOutput: String,
+      testCases: [
+        {
+          input: String,
+          output: String,
+        },
+      ],
+    },
+  ],
+  CreatedAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

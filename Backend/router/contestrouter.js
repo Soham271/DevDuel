@@ -1,7 +1,12 @@
 import express from "express";
-import { isAuthenticated } from "../middleware/auth.js";
-import { CreateContest } from "../controllers/ContestController.js";
+import {
+  CreateContest,
+  GetContestDetails,
+} from "../controllers/ContestController.js";
 
 const router = express.Router();
+
 router.post("/create-contest", CreateContest);
+router.get("/contest/:code", GetContestDetails);
+
 export default router;
