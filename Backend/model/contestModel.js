@@ -13,7 +13,7 @@ const Contestschema = new mongoose.Schema({
   Duration: {
     type: String,
     required: true,
-    enum: ["5min", "10min", "20min", "30min", "40min", "50min", "1hr"],
+    enum: ["1min","5min", "10min", "20min", "30min", "40min", "50min", "1hr"],
   },
   Language: {
     type: String,

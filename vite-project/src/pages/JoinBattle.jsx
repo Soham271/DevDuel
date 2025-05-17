@@ -1,45 +1,81 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import MonacoEditor from "@monaco-editor/react";
+import problems from "@/json-data/problems";
+import {
+  PageWrapper, ProblemPanel,
+  EditorPanel,
+  Title,
+  Description,
+  FormatText,
+  StyledButton,
+  OutputBox,
+  CustomButtonWrapper
+} from "@/components/StyledComponents";
+import CustomButton from "@/components/CustomButton";
 
-function JoinBattle() {
+// Language Map: Monaco → Judge0
+const languageMap = {
+  C: { id: 50, editorLang: "c" },
+  "C++": { id: 54, editorLang: "cpp" },
+  Java: { id: 62, editorLang: "java" },
+  Python: { id: 71, editorLang: "python" },
+  JavaScript: { id: 63, editorLang: "javascript" },
+};
+
+const JoinBattle = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { contestCode } = location.state || {};
+
   const [contest, setContest] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [filteredProblems, setFilteredProblems] = useState([]);
+  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
+  const [code, setCode] = useState("// Write your code here");
+  const [language, setLanguage] = useState("javascript");
+  const [output, setOutput] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
 
-  // Fetch contest details
   useEffect(() => {
-    if (contestCode) {
-      axios
-        .get(`http://localhost:3004/api/v1/joinBattle/contest/${contestCode}`)
-        .then((res) => {
-          setContest(res.data.contest);
-          // Calculate duration in seconds
-          const duration = res.data.contest.Duration;
-          let seconds = 0;
-          if (duration === "1hr") {
-            seconds = 3600;
-          } else {
-            seconds = parseInt(duration.replace("min", "")) * 60;
-          }
-          setTimeLeft(seconds);
-        })
-        .catch((err) => {
-          console.error("Failed to load contest:", err);
-          setError("Contest not found or an error occurred.");
-        });
-    } else {
+    if (!contestCode) {
       setError("No contest code provided.");
+      return;
     }
+
+    axios
+      .get(`http://localhost:3004/api/v1/joinBattle/contest/${contestCode}`)
+      .then((res) => {
+        const contestData = res.data.contest;
+        setContest(contestData);
+
+        // Set duration
+        const duration = contestData.Duration.includes("hr")
+          ? parseInt(contestData.Duration) * 3600
+          : parseInt(contestData.Duration.replace("min", "")) * 60;
+        setTimeLeft(duration);
+
+        // Filter problems
+        const filtered = problems.filter(
+          (p) =>
+            p.difficulty.toLowerCase() === contestData.Level.toLowerCase()
+        );
+        setFilteredProblems(filtered);
+
+        // Set language
+        const langObj = languageMap[contestData.Language];
+        if (langObj) setLanguage(langObj.editorLang);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError("Failed to load contest.");
+      });
   }, [contestCode]);
 
-  // Timer logic
   useEffect(() => {
-    if (timeLeft === null || timeLeft <= 0) return;
-
+    if (!timeLeft) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -50,106 +86,122 @@ function JoinBattle() {
         return prev - 1;
       });
     }, 1000);
-
     return () => clearInterval(timer);
   }, [timeLeft, navigate]);
 
-  // Format time as MM:SS
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes.toString().padStart(2, "0")}:${secs
+  const formatTime = (secs) => {
+    const mins = Math.floor(secs / 60);
+    const secsR = secs % 60;
+    return `${mins.toString().padStart(2, "0")}:${secsR
       .toString()
       .padStart(2, "0")}`;
   };
 
-  const styles = {
-    container: {
-      maxWidth: "800px",
-      margin: "auto",
-      padding: "2rem",
-      fontFamily: "Arial, sans-serif",
-    },
-    heading: {
-      fontSize: "1.8rem",
-      marginBottom: "1rem",
-    },
-    info: {
-      marginBottom: "0.5rem",
-      fontSize: "1.2rem",
-    },
-    timer: {
-      fontSize: "1.5rem",
-      fontWeight: "bold",
-      color: timeLeft <= 300 ? "red" : "black",
-      marginBottom: "1rem",
-    },
-    question: {
-      marginTop: "2rem",
-      border: "1px solid #ccc",
-      padding: "1rem",
-      borderRadius: "6px",
-    },
-    error: {
-      color: "red",
-      fontSize: "1.2rem",
-    },
+  const runCode = async () => {
+    setIsRunning(true);
+    setOutput("Running...");
+
+    const langEntry = Object.entries(languageMap).find(
+      ([, val]) => val.editorLang === language
+    );
+    const language_id = langEntry?.[1]?.id;
+    if (!language_id) {
+      setOutput("Unsupported language selected.");
+      setIsRunning(false);
+      return;
+    }
+
+    const currentProblem = filteredProblems[currentProblemIndex];
+    const testCase = currentProblem.testCases?.[0] || { input: "", output: "" };
+
+    try {
+      const { data } = await axios.post(
+        "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true",
+        {
+          source_code: code,
+          language_id,
+          stdin: testCase.input,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "X-RapidAPI-Key": "46aa234c9dmsh883ebe8a023ae11p1ee065jsn0b4eb6176b52",
+            "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+          },
+        }
+      );
+
+      const resultOutput =
+        data.stdout || data.stderr || data.compile_output || "No output";
+      setOutput(resultOutput);
+    } catch (err) {
+      console.error(err);
+      setOutput("Error executing code.");
+    }
+
+    setIsRunning(false);
   };
 
-  if (error) {
-    return (
-      <div style={styles.container}>
-        <p style={styles.error}>{error}</p>
-      </div>
-    );
-  }
+  if (error) return <div>{error}</div>;
+  if (!contest || filteredProblems.length === 0)
+    return <div>Loading contest or problems...</div>;
 
-  if (!contest) {
-    return (
-      <div style={styles.container}>
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
-  const question = contest.Questions[0];
+  const currentProblem = filteredProblems[currentProblemIndex];
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.heading}>{contest.Title}</h1>
-      <p style={styles.info}>Contest Code: {contest.Code}</p>
-      <p style={styles.info}>Level: {contest.Level}</p>
-      <p style={styles.info}>Language: {contest.Language}</p>
-      <p style={styles.info}>Duration: {contest.Duration}</p>
-      <p style={styles.timer}>Time Left: {formatTime(timeLeft)}</p>
-      <h2>Problem</h2>
-      {question ? (
-        <div style={styles.question}>
-          <h3>{question.title}</h3>
-          <p>
-            <strong>Difficulty:</strong> {question.difficulty}
-          </p>
-          <p>
-            <strong>Description:</strong> {question.description}
-          </p>
-          <p>
-            <strong>Input Format:</strong> {question.inputFormat}
-          </p>
-          <p>
-            <strong>Output Format:</strong> {question.outputFormat}
-          </p>
-          <p>
-            <strong>Sample Input:</strong> {question.sampleInput}
-          </p>
-          <p>
-            <strong>Sample Output:</strong> {question.sampleOutput}
-          </p>
+    <PageWrapper>
+      {/* Problem Panel */}
+      <ProblemPanel>
+        <Title>{currentProblem.title}</Title>
+        <Description>{currentProblem.description}</Description>
+        <FormatText>
+          <b>Input Format:</b> {currentProblem.inputFormat}
+          <br />
+          <b>Output Format:</b> {currentProblem.outputFormat}
+          <br />
+          <b>Sample Input:</b> {currentProblem.sampleInput}
+          <br />
+          <b>Sample Output:</b> {currentProblem.sampleOutput}
+        </FormatText>
+        <div>
+          <CustomButton
+            disabled={currentProblemIndex === 0}
+            onClick={() => setCurrentProblemIndex(i => i - 1)}
+          >
+            Prev
+          </CustomButton>
+
+          <CustomButton
+            disabled={currentProblemIndex === filteredProblems.length - 1}
+            onClick={() => setCurrentProblemIndex(i => i + 1)}
+          >
+            Next
+          </CustomButton>
         </div>
-      ) : (
-        <p>No problem available.</p>
-      )}
-    </div>
+        <div style={{ marginTop: "20px", fontWeight: "bold", color: "#555" }}>
+          ⏳ Time Left: {formatTime(timeLeft)}
+        </div>
+      </ProblemPanel>
+
+      {/* Code Editor Panel */}
+      <EditorPanel>
+        <MonacoEditor
+          height="400px"
+          language={language}
+          value={code}
+          onChange={(val) => setCode(val || "")}
+          options={{ minimap: { enabled: false }, fontSize: 14 }}
+        />
+        <div style={{ marginTop: "10px" }}>
+          <CustomButton onClick={runCode} disabled={isRunning}>
+            {isRunning ? "Running..." : "Run Code"}
+          </CustomButton>
+          <OutputBox>{output}</OutputBox>
+        </div>
+      </EditorPanel>
+    </PageWrapper>
   );
-}
+
+};
 
 export default JoinBattle;
