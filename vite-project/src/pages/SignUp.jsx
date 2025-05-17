@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import 'react-phone-number-input/style.css';
+
 import PhoneInput from "react-phone-number-input";
 import NProgress from "nprogress";
 

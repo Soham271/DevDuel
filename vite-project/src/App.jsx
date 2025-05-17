@@ -13,6 +13,7 @@ import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import CreateContest from "./pages/CreateContest";
 import JoinBattle from "./pages/JoinBattle";
+import ContestEnded from "./pages/ContestEnded";
 
 const App = () => {
   const router = createBrowserRouter([
@@ -36,6 +37,11 @@ const App = () => {
       path: "/Join-Battle",
       element: <JoinBattle />,
     },
+
+    {
+      path:"/contest-ended",
+      element:<ContestEnded/>
+    }
   ]);
 
   return (
