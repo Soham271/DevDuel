@@ -14,7 +14,7 @@ import Home from "./pages/Home";
 import CreateContest from "./pages/CreateContest";
 import JoinBattle from "./pages/JoinBattle";
 import ContestEnded from "./pages/ContestEnded";
-
+import Joincontest from "./pages/Joincontest";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -41,6 +41,10 @@ const App = () => {
     {
       path:"/contest-ended",
       element:<ContestEnded/>
+    },
+    {
+      path:"/join-contest",
+      element:<Joincontest/>
     }
   ]);
 

@@ -1,21 +1,16 @@
-import app from "./app.js";
-
+import { app, server } from "./app.js";
 import { fileURLToPath } from "url";
 import path from "path";
 
-// Get the current directory name in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
-
-// Serve the 'indes.html' file
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "indes.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html")); // fix typo 'indes.html' -> 'index.html'
 });
 
-// Start the server
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const port = process.env.PORT || 3004;  // Use 3004 if your client connects there
+
+server.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

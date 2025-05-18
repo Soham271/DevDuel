@@ -51,14 +51,14 @@ function CreateContest() {
   };
 
   const handleCodeClick = () => {
-    navigator.clipboard.writeText(contestCode.toString());
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-      setShowModal(false);
-      navigate("/Join-Battle", { state: { contestCode } });
-    }, 1500);
-  };
+  navigator.clipboard.writeText(contestCode.toString());
+  setCopied(true);
+  setTimeout(() => {
+    setCopied(false);
+    setShowModal(false);
+    navigate("/Join-Battle", { state: { contestCode } }); 
+  }, 1500);
+};
 
   return (
     <Container
