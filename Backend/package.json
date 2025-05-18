@@ -19,7 +19,8 @@
     "nodemailer": "^6.9.16",
     "pdf-parse": "^1.1.1",
     "pdf2json": "^3.1.5",
-    "pdfreader": "^3.0.6"
+    "pdfreader": "^3.0.6",
+    "socket.io": "^4.8.1"
   },
   "name": "job-auto",
   "version": "1.0.0",

@@ -9,9 +9,13 @@ import contestRoutes from "./router/contestrouter.js";
 import JoinbattleRoutes from "./router/JoinBattle.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import { Server } from "socket.io";
+import { createServer } from "http";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const server = createServer(app);
+const io = new Server(server);
 
 dotenv.config({ path: "./config/config.env" });
 
