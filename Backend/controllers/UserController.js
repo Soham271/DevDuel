@@ -209,3 +209,15 @@ export const resetPassword = catchAsyncErr(async (req, res, next) => {
 
   generateToken(User, "Password Reset Successfully", 200, res);
 });
+
+// GetMyprofile
+export const GetMyprofile = catchAsyncErr(async (req, res, next) => {
+  const User = await user.findById(req.user._id);
+  if (!User) {
+    return next(new ErrorHandler("Code is Inavlid", 400));
+  }
+  res.status(200).send({
+    success: true,
+    message: User,
+  });
+});
