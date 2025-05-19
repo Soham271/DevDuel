@@ -3,13 +3,13 @@ import { catchAsyncErr } from "../middleware/catchasyncErr.js";
 import { ErrorHandler } from "../middleware/err.js";
 import problems from "../json-data/problems.js";
 
-// Utility function to get a random element
+
 const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export const CreateContest = catchAsyncErr(async (req, res, next) => {
   const { Title, Level, Duration, Language, Code } = req.body;
 
-  // Input validation
+ 
   if (!Title || !Level || !Duration || !Language || !Code) {
     return next(new ErrorHandler("All fields are required", 400));
   }
@@ -19,13 +19,12 @@ export const CreateContest = catchAsyncErr(async (req, res, next) => {
     return next(new ErrorHandler("Invalid contest code", 400));
   }
 
-  // Check for duplicate contest code
+
   const existingContest = await CreateContestModel.findOne({ Code: codeNumber });
   if (existingContest) {
     return next(new ErrorHandler("Contest code already exists", 400));
   }
 
-  // Filter questions by level
   const filteredQuestions = problems.filter(
     (q) => q.difficulty.toLowerCase() === Level.toLowerCase()
   );
@@ -36,7 +35,7 @@ export const CreateContest = catchAsyncErr(async (req, res, next) => {
 
   const selectedQuestion = getRandomElement(filteredQuestions);
 
-  // Create and save contest
+ 
   const contest = await CreateContestModel.create({
     Title,
     Level,
