@@ -17,6 +17,7 @@ import {
   CopyNote,
   CopiedToast,
 } from "@/components/styled";
+import TermsModal from "@/components/TermsModal";
 
 function CreateContest() {
   const user = useSelector((state) => state.user.user);
@@ -26,14 +27,21 @@ function CreateContest() {
     Duration: "",
     Language: "",
   });
+  
 
   const [contestCode, setContestCode] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
   const navigate = useNavigate();
 
   const handleCreateContext = async (e) => {
     e.preventDefault();
+    if (!termsAccepted) {
+      alert("Please accept the Terms and Conditions to create a contest.");
+      return;
+    }
     const code = Math.floor(10000000 + Math.random() * 90000000);
     setContestCode(code);
 
@@ -51,14 +59,14 @@ function CreateContest() {
   };
 
   const handleCodeClick = () => {
-  navigator.clipboard.writeText(contestCode.toString());
-  setCopied(true);
-  setTimeout(() => {
-    setCopied(false);
-    setShowModal(false);
-    navigate("/Join-Battle", { state: { contestCode } }); 
-  }, 1500);
-};
+    navigator.clipboard.writeText(contestCode.toString());
+    setCopied(true);
+    setTimeout(() => {
+      setCopied(false);
+      setShowModal(false);
+      navigate("/Join-Battle", { state: { contestCode } });
+    }, 1500);
+  };
 
   return (
     <Container
@@ -75,6 +83,7 @@ function CreateContest() {
           onChange={(e) =>
             setCreateContestData({ ...CreateContestData, Title: e.target.value })
           }
+          required
         />
 
         <Label>Difficulty Level</Label>
@@ -83,6 +92,7 @@ function CreateContest() {
           onChange={(e) =>
             setCreateContestData({ ...CreateContestData, Level: e.target.value })
           }
+          required
         >
           <option value="">--Select--</option>
           <option value="easy">Easy</option>
@@ -96,9 +106,9 @@ function CreateContest() {
           onChange={(e) =>
             setCreateContestData({ ...CreateContestData, Duration: e.target.value })
           }
+          required
         >
           <option value="">--Select--</option>
-          <option value="1min">1 Minute</option>
           <option value="5min">5 Minutes</option>
           <option value="10min">10 Minutes</option>
           <option value="20min">20 Minutes</option>
@@ -114,6 +124,7 @@ function CreateContest() {
           onChange={(e) =>
             setCreateContestData({ ...CreateContestData, Language: e.target.value })
           }
+          required
         >
           <option value="">--Select--</option>
           <option value="C">C</option>
@@ -122,25 +133,53 @@ function CreateContest() {
           <option value="Python">Python</option>
         </Select>
 
+        <Label style={{ marginTop: "1.5rem", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={() => setTermsAccepted(!termsAccepted)}
+            style={{ marginRight: "0.5rem" }}
+          />
+          I accept the{" "}
+          <span
+            style={{ textDecoration: "underline", color: "#007bff", cursor: "pointer" }}
+            onClick={() => setShowTermsModal(true)}
+          >
+            Terms and Conditions
+          </span>
+        </Label>
+
         <SubmitButton
           type="submit"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
+          disabled={!termsAccepted}
+          style={{
+            opacity: termsAccepted ? 1 : 0.6,
+            cursor: termsAccepted ? "pointer" : "not-allowed",
+            marginTop: "1rem",
+          }}
         >
           Create Contest
         </SubmitButton>
       </StyledForm>
 
+      {/* Contest Created Modal */}
       {showModal && (
         <ModalOverlay>
           <ModalContent>
             <ModalMessage>Contest Created Successfully!</ModalMessage>
-            <ModalCode onClick={handleCodeClick}>{contestCode}</ModalCode>
+            <ModalCode onClick={handleCodeClick} style={{ cursor: "pointer" }}>
+              {contestCode}
+            </ModalCode>
             <CopyNote>Click on code to copy</CopyNote>
             {copied && <CopiedToast>Code copied successfully!</CopiedToast>}
           </ModalContent>
         </ModalOverlay>
       )}
+
+      {/* Terms and Conditions Modal */}
+      <TermsModal visible={showTermsModal} onClose={() => setShowTermsModal(false)} />
     </Container>
   );
 }

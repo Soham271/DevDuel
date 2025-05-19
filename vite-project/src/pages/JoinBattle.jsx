@@ -4,18 +4,18 @@ import axios from "axios";
 import MonacoEditor from "@monaco-editor/react";
 import problems from "@/json-data/problems";
 import {
-  PageWrapper, ProblemPanel,
+  PageWrapper,
+  ProblemPanel,
   EditorPanel,
   Title,
   Description,
   FormatText,
-  StyledButton,
-  OutputBox,
-  CustomButtonWrapper
+  OutputBox
 } from "@/components/StyledComponents";
 import CustomButton from "@/components/CustomButton";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-// Language Map: Monaco → Judge0
 const languageMap = {
   C: { id: 50, editorLang: "c" },
   "C++": { id: 54, editorLang: "cpp" },
@@ -31,18 +31,30 @@ const JoinBattle = () => {
 
   const [contest, setContest] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
-  const [filteredProblems, setFilteredProblems] = useState([]);
-  const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-  const [code, setCode] = useState("// Write your code here");
+  const [problem, setProblem] = useState(null);
+  const [code, setCode] = useState(() => {
+    return localStorage.getItem("userCode") || "// Write your code here";
+  });
   const [language, setLanguage] = useState("javascript");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
+  const [oneMinuteLeftShown, setOneMinuteLeftShown] = useState(false);
 
   useEffect(() => {
     if (!contestCode) {
       setError("No contest code provided.");
       return;
+    }
+
+    const hasShownToast = sessionStorage.getItem("contestToastShown");
+
+    if (!hasShownToast) {
+      toast.success("Contest Started, All the best!", {
+        position: "top-center",
+        autoClose: 2500,
+      });
+      sessionStorage.setItem("contestToastShown", "true");
     }
 
     axios
@@ -51,20 +63,29 @@ const JoinBattle = () => {
         const contestData = res.data.contest;
         setContest(contestData);
 
-        // Set duration
         const duration = contestData.Duration.includes("hr")
           ? parseInt(contestData.Duration) * 3600
           : parseInt(contestData.Duration.replace("min", "")) * 60;
-        setTimeLeft(duration);
 
-        // Filter problems
+        const storedStartTime = localStorage.getItem("contestStartTime");
+        const storedDuration = localStorage.getItem("contestDuration");
+
+        if (storedStartTime && storedDuration) {
+          const elapsed = Math.floor((Date.now() - parseInt(storedStartTime)) / 1000);
+          const remaining = parseInt(storedDuration) - elapsed;
+          setTimeLeft(Math.max(remaining, 0));
+        } else {
+          const now = Date.now();
+          localStorage.setItem("contestStartTime", now.toString());
+          localStorage.setItem("contestDuration", duration.toString());
+          setTimeLeft(duration);
+        }
+
         const filtered = problems.filter(
-          (p) =>
-            p.difficulty.toLowerCase() === contestData.Level.toLowerCase()
+          (p) => p.difficulty.toLowerCase() === contestData.Level.toLowerCase()
         );
-        setFilteredProblems(filtered);
+        if (filtered.length > 0) setProblem(filtered[0]);
 
-        // Set language
         const langObj = languageMap[contestData.Language];
         if (langObj) setLanguage(langObj.editorLang);
       })
@@ -75,19 +96,37 @@ const JoinBattle = () => {
   }, [contestCode]);
 
   useEffect(() => {
-    if (!timeLeft) return;
+    if (!timeLeft && timeLeft !== 0) return;
+
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 1) {
+        const next = prev - 1;
+
+        // Show 1-minute warning
+        if (next === 60 && !oneMinuteLeftShown) {
+          toast.warn("⚠️ Only 1 minute left!", {
+            position: "top-center",
+            autoClose: 3000,
+          });
+          setOneMinuteLeftShown(true);
+        }
+
+        // Contest end
+        if (next <= 0) {
           clearInterval(timer);
+          localStorage.removeItem("contestStartTime");
+          localStorage.removeItem("contestDuration");
+          localStorage.removeItem("userCode");
           navigate("/contest-ended");
           return 0;
         }
-        return prev - 1;
+
+        return next;
       });
     }, 1000);
+
     return () => clearInterval(timer);
-  }, [timeLeft, navigate]);
+  }, [timeLeft, navigate, oneMinuteLeftShown]);
 
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
@@ -111,8 +150,7 @@ const JoinBattle = () => {
       return;
     }
 
-    const currentProblem = filteredProblems[currentProblemIndex];
-    const testCase = currentProblem.testCases?.[0] || { input: "", output: "" };
+    const testCase = problem?.testCases?.[0] || { input: "", output: "" };
 
     try {
       const { data } = await axios.post(
@@ -142,44 +180,55 @@ const JoinBattle = () => {
     setIsRunning(false);
   };
 
-  if (error) return <div>{error}</div>;
-  if (!contest || filteredProblems.length === 0)
-    return <div>Loading contest or problems...</div>;
+  const handleCopyCode = () => {
+    if (contestCode) {
+      navigator.clipboard.writeText(contestCode.toString());
+      toast.info("Contest code copied!");
+    }
+  };
 
-  const currentProblem = filteredProblems[currentProblemIndex];
+  if (error) return <div>{error}</div>;
+  if (!contest || !problem) return <div>Loading contest or problem...</div>;
 
   return (
     <PageWrapper>
+      <ToastContainer />
+
       {/* Problem Panel */}
       <ProblemPanel>
-        <Title>{currentProblem.title}</Title>
-        <Description>{currentProblem.description}</Description>
+        <Title>{problem.title}</Title>
+        <Description>{problem.description}</Description>
         <FormatText>
-          <b>Input Format:</b> {currentProblem.inputFormat}
+          <b>Input Format:</b> {problem.inputFormat}
           <br />
-          <b>Output Format:</b> {currentProblem.outputFormat}
+          <b>Output Format:</b> {problem.outputFormat}
           <br />
-          <b>Sample Input:</b> {currentProblem.sampleInput}
+          <b>Sample Input:</b> {problem.sampleInput}
           <br />
-          <b>Sample Output:</b> {currentProblem.sampleOutput}
+          <b>Sample Output:</b> {problem.sampleOutput}
         </FormatText>
-        <div>
-          <CustomButton
-            disabled={currentProblemIndex === 0}
-            onClick={() => setCurrentProblemIndex(i => i - 1)}
-          >
-            Prev
-          </CustomButton>
 
-          <CustomButton
-            disabled={currentProblemIndex === filteredProblems.length - 1}
-            onClick={() => setCurrentProblemIndex(i => i + 1)}
-          >
-            Next
-          </CustomButton>
-        </div>
         <div style={{ marginTop: "20px", fontWeight: "bold", color: "#555" }}>
           ⏳ Time Left: {formatTime(timeLeft)}
+        </div>
+
+        <div style={{ marginTop: "12px" }}>
+          <span
+            onClick={handleCopyCode}
+            style={{
+              display: "inline-block",
+              padding: "6px 12px",
+              backgroundColor: "#f2f2f2",
+              borderRadius: "10px",
+              border: "1px solid #ccc",
+              fontWeight: 500,
+              cursor: "pointer",
+              userSelect: "none",
+            }}
+            title="Click to copy"
+          >
+            📋 Contest Code: {contestCode}
+          </span>
         </div>
       </ProblemPanel>
 
@@ -189,7 +238,10 @@ const JoinBattle = () => {
           height="400px"
           language={language}
           value={code}
-          onChange={(val) => setCode(val || "")}
+          onChange={(val) => {
+            setCode(val || "");
+            localStorage.setItem("userCode", val || "");
+          }}
           options={{ minimap: { enabled: false }, fontSize: 14 }}
         />
         <div style={{ marginTop: "10px" }}>
@@ -201,7 +253,6 @@ const JoinBattle = () => {
       </EditorPanel>
     </PageWrapper>
   );
-
 };
 
 export default JoinBattle;
