@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const Contestschema = new mongoose.Schema({
+const ContestSchema = new mongoose.Schema({
   Title: {
     type: String,
     required: true,
@@ -11,9 +11,8 @@ const Contestschema = new mongoose.Schema({
     enum: ["easy", "medium", "hard"],
   },
   Duration: {
-    type: String,
+    type: Number, // ✅ Store in minutes
     required: true,
-    enum: ["1min","5min", "10min", "20min", "30min", "40min", "50min", "1hr"],
   },
   Language: {
     type: String,
@@ -24,6 +23,10 @@ const Contestschema = new mongoose.Schema({
     type: Number,
     required: true,
     unique: true,
+  },
+  isRunning: {
+    type: Boolean,
+    default: true, // ✅ Used to fetch running contests
   },
   Questions: [
     {
@@ -49,5 +52,5 @@ const Contestschema = new mongoose.Schema({
   },
 });
 
-const CreateContestModel = mongoose.model("createContest", Contestschema);
+const CreateContestModel = mongoose.model("createContest", ContestSchema);
 export default CreateContestModel;
