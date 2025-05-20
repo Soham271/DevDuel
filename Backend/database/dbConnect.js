@@ -4,7 +4,6 @@ const dbconnect = () => {
   return mongoose
     .connect(process.env.MONGO_URL, {
       // Ensure correct connection string
-     
     })
     .then(() => console.log("MongoDB connected successfully"))
     .catch((error) => {

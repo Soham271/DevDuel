@@ -1,6 +1,6 @@
+// Store/UserSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
-import { Turtle } from "lucide-react";
 
 const initialState = {
   loading: false,
@@ -15,10 +15,16 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    SignupRequested(state) {},
-    SignupSucess(state) {},
-    SignupFailed(state) {},
-
+    SignupRequested(state) {
+      state.loading = true;
+    },
+    SignupSucess(state) {
+      state.loading = false;
+    },
+    SignupFailed(state, action) {
+      state.loading = false;
+      state.error = action.payload;
+    },
     loginRequested(state) {
       state.loading = true;
       state.isAuthenticated = false;
@@ -46,8 +52,6 @@ const userSlice = createSlice({
     },
     logoutFailed(state, action) {
       state.loading = false;
-      state.isAuthenticated = state.isAuthenticated;
-      state.user = state.user;
       state.error = action.payload;
     },
     updatePasswordRequest(state) {
@@ -68,22 +72,25 @@ const userSlice = createSlice({
       state.message = null;
       state.error = action.payload;
     },
-    GetMyProfileLoading(state, action) {
-      (state.loading = true), (state.isUpdated = false);
-      state.message = false;
+    GetMyProfileLoading(state) {
+      state.loading = true;
+      state.isUpdated = false;
+      state.message = null;
       state.error = null;
     },
     GetMyProfileSucess(state, action) {
-      (state.loading = true), (state.isUpdated = true);
-      state.message = action.payload;
+      state.loading = false;
+      state.isUpdated = true;
+      state.user = action.payload;
+      state.isAuthenticated = true;
       state.error = null;
     },
     GetMyProfileFailed(state, action) {
-      (state.loading = false), (state.isUpdated = false);
-      state.message = false;
+      state.loading = false;
+      state.isUpdated = false;
+      state.message = null;
       state.error = action.payload;
     },
-
     clearAllError(state) {
       state.error = null;
     },
@@ -99,9 +106,12 @@ export const {
   updatePasswordRequest,
   updatePasswordSucess,
   updatePasswordFailed,
-  clearAllError, // Explicitly exporting the clearAllError action
+  GetMyProfileLoading,
+  GetMyProfileSucess,
+  GetMyProfileFailed,
+  clearAllError,
 } = userSlice.actions;
-export const register = (email, password) => async (dispatch) => {};
+
 export const login = (email, password) => async (dispatch) => {
   dispatch(loginRequested());
   try {
@@ -115,13 +125,13 @@ export const login = (email, password) => async (dispatch) => {
         },
       }
     );
-
     dispatch(loginSuccess(data.user));
     dispatch(clearAllError());
   } catch (error) {
     dispatch(loginFailed(error.response?.data?.message || "Login failed"));
   }
 };
+
 export const GetMyProfile = () => async (dispatch) => {
   dispatch(GetMyProfileLoading());
   try {
@@ -131,22 +141,26 @@ export const GetMyProfile = () => async (dispatch) => {
         withCredentials: true,
       }
     );
-    dispatch(loginSuccess(data.user));
+    dispatch(GetMyProfileSucess(data.message)); // Use message (User object)
     dispatch(clearAllError());
   } catch (err) {
-    dispatch(loginFailed(err.response?.data?.message || "Login failed"));
+    dispatch(
+      GetMyProfileFailed(
+        err.response?.data?.message || "Failed to fetch profile"
+      )
+    );
   }
 };
+
 export const logout = () => async (dispatch) => {
   try {
     const { data } = await axios.post(
       "http://localhost:3004/api/v1/user/logout",
-
+      {},
       {
         withCredentials: true,
       }
     );
-
     dispatch(logoutSuccess(data.message));
     dispatch(clearAllError());
   } catch (error) {
@@ -166,7 +180,6 @@ export const updatePassword =
           headers: { "Content-Type": "application/json" },
         }
       );
-
       dispatch(updatePasswordSucess(data.message));
       dispatch(clearAllError());
     } catch (error) {
