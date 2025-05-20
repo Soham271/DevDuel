@@ -47,7 +47,7 @@ function CreateContest() {
 
     try {
       await axios.post(
-        "http://localhost:3004/api/v1/contenst/create-contest",
+        "http://localhost:3004/api/v1/contest/create-contest",
         { ...CreateContestData, Code: code },
         { headers: { "Content-Type": "application/json" }, withCredentials: true }
       );
