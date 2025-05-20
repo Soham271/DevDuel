@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
+import { Turtle } from "lucide-react";
 
 const initialState = {
   loading: false,
@@ -67,6 +68,22 @@ const userSlice = createSlice({
       state.message = null;
       state.error = action.payload;
     },
+    GetMyProfileLoading(state, action) {
+      (state.loading = true), (state.isUpdated = false);
+      state.message = false;
+      state.error = null;
+    },
+    GetMyProfileSucess(state, action) {
+      (state.loading = true), (state.isUpdated = true);
+      state.message = action.payload;
+      state.error = null;
+    },
+    GetMyProfileFailed(state, action) {
+      (state.loading = false), (state.isUpdated = false);
+      state.message = false;
+      state.error = action.payload;
+    },
+
     clearAllError(state) {
       state.error = null;
     },
@@ -105,12 +122,26 @@ export const login = (email, password) => async (dispatch) => {
     dispatch(loginFailed(error.response?.data?.message || "Login failed"));
   }
 };
-
+export const GetMyProfile = () => async (dispatch) => {
+  dispatch(GetMyProfileLoading());
+  try {
+    const { data } = await axios.get(
+      "http://localhost:3004/api/v1/user/myprofile",
+      {
+        withCredentials: true,
+      }
+    );
+    dispatch(loginSuccess(data.user));
+    dispatch(clearAllError());
+  } catch (err) {
+    dispatch(loginFailed(err.response?.data?.message || "Login failed"));
+  }
+};
 export const logout = () => async (dispatch) => {
   try {
     const { data } = await axios.post(
       "http://localhost:3004/api/v1/user/logout",
-      {},
+
       {
         withCredentials: true,
       }
