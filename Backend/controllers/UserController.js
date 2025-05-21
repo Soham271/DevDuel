@@ -221,3 +221,22 @@ export const GetMyprofile = catchAsyncErr(async (req, res, next) => {
     message: User,
   });
 });
+export const UpdateProfile = catchAsyncErr(async (req, res, next) => {
+  const { fullName, phone } = req.body;
+
+  const User = await user.findById(req.user._id);
+  if (!User) {
+    return next(new ErrorHandler("User not found", 404));
+  }
+
+  if (fullName) User.fullName = fullName;
+  if (phone) User.phone = phone;
+
+  await User.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Profile updated successfully",
+    user: User,
+  });
+});

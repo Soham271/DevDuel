@@ -15,6 +15,9 @@ import CreateContest from "./pages/CreateContest";
 import JoinBattle from "./pages/JoinBattle";
 import ContestEnded from "./pages/ContestEnded";
 import Joincontest from "./pages/Joincontest";
+import { element } from "prop-types";
+import Profile from "./pages/Profile";
+import EditProfile from "./pages/EditProfile";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -39,13 +42,21 @@ const App = () => {
     },
 
     {
-      path:"/contest-ended",
-      element:<ContestEnded/>
+      path: "/contest-ended",
+      element: <ContestEnded />,
     },
     {
-      path:"/join-contest",
-      element:<Joincontest/>
-    }
+      path: "/join-contest",
+      element: <Joincontest />,
+    },
+    {
+      path: "/profile",
+      element: <Profile />,
+    },
+    {
+      path: "/edit-profile",
+      element: <EditProfile />,
+    },
   ]);
 
   return (

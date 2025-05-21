@@ -91,6 +91,27 @@ const userSlice = createSlice({
       state.message = null;
       state.error = action.payload;
     },
+    updateUserRequest(state, action) {
+      state.loading = true;
+      state.isUpdated = false;
+      state.message = null;
+      state.error = null;
+    },
+    updateUserSucess(state, action) {
+      state.loading = false;
+      state.isUpdated = true;
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.error = null;
+    },
+
+    updateUserFail(state, action) {
+      state.loading = true;
+      state.isUpdated = false;
+      state.message = null;
+      state.error = action.payload;
+    },
+
     clearAllError(state) {
       state.error = null;
     },
@@ -109,6 +130,9 @@ export const {
   GetMyProfileLoading,
   GetMyProfileSucess,
   GetMyProfileFailed,
+  updateUserRequest,
+  updateUserSucess,
+  updateUserFail,
   clearAllError,
 } = userSlice.actions;
 
@@ -188,6 +212,23 @@ export const updatePassword =
       );
     }
   };
+export const updateProfile = (fullName, phone) => async (dispatch) => {
+  dispatch(updateUserRequest());
+  try {
+    const { data } = await axios.put(
+      "http://localhost:3004/api/v1/user/edit-Profile",
+      { fullName, phone },
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    dispatch(updateUserSucess(data.message));
+    dispatch(clearAllError());
+  } catch (error) {
+    dispatch(updateUserFail(error.response?.data?.message || "Update failed"));
+  }
+};
 
 export const clearAllUserError = () => (dispatch) => {
   dispatch(clearAllError());
