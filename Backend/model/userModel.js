@@ -1,10 +1,8 @@
 import mongoose from "mongoose";
-
 import bcrypt from "bcrypt";
 import crypto from "crypto";
-import { type } from "os";
-
 import jwt from "jsonwebtoken";
+
 const userSchema = mongoose.Schema({
   fullName: {
     type: String,
@@ -16,20 +14,19 @@ const userSchema = mongoose.Schema({
   password: {
     type: String,
     required: [true, "pass is required"],
-    minLength: [8, "  max is 16"],
+    minLength: [8, "max is 16"],
     select: false,
   },
-
   phone: {
     type: Number,
     unique: true,
     required: [true, "Please enter your phone number"],
   },
+  resetPasswordToken: String,
+  resetPasswordExpire: Date,
+});
 
-
-},
-);
-// Hash Pass before Save
+// Hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
@@ -37,10 +34,12 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
-// compare password by hashing
+
+// Compare password by hashing
 userSchema.methods.comparePassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
 // JWT Token generation
 userSchema.methods.generateJsonWebToken = function () {
   const token = jwt.sign(
@@ -53,17 +52,16 @@ userSchema.methods.generateJsonWebToken = function () {
   return token;
 };
 
+// Generate and hash reset password token
 userSchema.methods.getResetPasswordToken = function () {
   const resetToken = crypto.randomBytes(20).toString("hex");
 
-  // Hash the token and set it to resetPasswordToken field
   this.resetPasswordToken = crypto
-    .createHash("sha256") // Fix the typo: 'shad256' → 'sha256'
+    .createHash("sha256") // Correct hashing function (sha256)
     .update(resetToken)
     .digest("hex");
 
-  // Set expiration time for the reset token
-  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
+  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
 
   return resetToken;
 };

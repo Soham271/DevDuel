@@ -18,6 +18,8 @@ import Joincontest from "./pages/Joincontest";
 import { element } from "prop-types";
 import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
+import ForgetPassword from "./pages/ForgetPassword";
+import ResetPassword from "./pages/Reset-Password";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -56,6 +58,14 @@ const App = () => {
     {
       path: "/edit-profile",
       element: <EditProfile />,
+    },
+    {
+      path: "/forgetPassword",
+      element: <ForgetPassword />,
+    },
+    {
+      path: "/password/reset/:token",
+      element: <ResetPassword />,
     },
   ]);
 

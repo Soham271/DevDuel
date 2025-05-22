@@ -3,9 +3,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import styled from "styled-components";
 
-
-
-
 import {
   Card,
   CardContent,
@@ -35,11 +32,9 @@ const Login = () => {
 
   // JWT Email/Password Login
   const handleJWTLogin = () => {
-   
     try {
       dispatch(login(user.email, user.password));
     } catch (err) {
-  
       toast.error(err || "login Failed");
     }
   };
@@ -58,7 +53,6 @@ const Login = () => {
       toast.error("Google sign-in failed");
     }
   };
-
 
   useEffect(() => {
     if (error) {
@@ -150,6 +144,9 @@ const Login = () => {
           New Here?{" "}
           <a href="/signup" className="a2">
             Signup
+          </a>
+          <a href="/forgetPassword" className="a2 ml-9">
+            Forget Password
           </a>
         </p>
       </div>

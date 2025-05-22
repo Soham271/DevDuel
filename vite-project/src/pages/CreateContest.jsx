@@ -18,6 +18,7 @@ import {
   CopiedToast,
 } from "@/components/styled";
 import TermsModal from "@/components/TermsModal";
+import Navbar from "./Navbar";
 
 function CreateContest() {
   const user = useSelector((state) => state.user.user);
@@ -27,7 +28,6 @@ function CreateContest() {
     Duration: "",
     Language: "",
   });
-  
 
   const [contestCode, setContestCode] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -49,7 +49,10 @@ function CreateContest() {
       await axios.post(
         "http://localhost:3004/api/v1/contenst/create-contest",
         { ...CreateContestData, Code: code },
-        { headers: { "Content-Type": "application/json" }, withCredentials: true }
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
       );
 
       setShowModal(true);
@@ -74,6 +77,7 @@ function CreateContest() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
+      <Navbar />
       <Heading>Create Contest</Heading>
       <StyledForm onSubmit={handleCreateContext}>
         <Label>Contest Title</Label>
@@ -81,7 +85,10 @@ function CreateContest() {
           type="text"
           value={CreateContestData.Title}
           onChange={(e) =>
-            setCreateContestData({ ...CreateContestData, Title: e.target.value })
+            setCreateContestData({
+              ...CreateContestData,
+              Title: e.target.value,
+            })
           }
           required
         />
@@ -90,7 +97,10 @@ function CreateContest() {
         <Select
           value={CreateContestData.Level}
           onChange={(e) =>
-            setCreateContestData({ ...CreateContestData, Level: e.target.value })
+            setCreateContestData({
+              ...CreateContestData,
+              Level: e.target.value,
+            })
           }
           required
         >
@@ -104,7 +114,10 @@ function CreateContest() {
         <Select
           value={CreateContestData.Duration}
           onChange={(e) =>
-            setCreateContestData({ ...CreateContestData, Duration: e.target.value })
+            setCreateContestData({
+              ...CreateContestData,
+              Duration: e.target.value,
+            })
           }
           required
         >
@@ -122,7 +135,10 @@ function CreateContest() {
         <Select
           value={CreateContestData.Language}
           onChange={(e) =>
-            setCreateContestData({ ...CreateContestData, Language: e.target.value })
+            setCreateContestData({
+              ...CreateContestData,
+              Language: e.target.value,
+            })
           }
           required
         >
@@ -142,7 +158,11 @@ function CreateContest() {
           />
           I accept the{" "}
           <span
-            style={{ textDecoration: "underline", color: "#007bff", cursor: "pointer" }}
+            style={{
+              textDecoration: "underline",
+              color: "#007bff",
+              cursor: "pointer",
+            }}
             onClick={() => setShowTermsModal(true)}
           >
             Terms and Conditions
@@ -179,7 +199,10 @@ function CreateContest() {
       )}
 
       {/* Terms and Conditions Modal */}
-      <TermsModal visible={showTermsModal} onClose={() => setShowTermsModal(false)} />
+      <TermsModal
+        visible={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+      />
     </Container>
   );
 }

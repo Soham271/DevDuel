@@ -13,28 +13,69 @@ const Profile = () => {
   }, [dispatch]);
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
-        My Profile
-      </h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-blue-50 to-blue-100 p-4 sm:p-6 lg:p-8">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl border border-gray-100">
+          <div className="px-6 py-8 sm:p-10">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+                My Profile
+              </h2>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                View your personal information below.
+              </p>
+            </div>
 
-      {loading ? (
-        <p className="text-center text-gray-500">Loading...</p>
-      ) : error ? (
-        <p className="text-center text-red-500">{error}</p>
-      ) : (
-        <div className="space-y-4">
-          <div className="text-lg text-gray-700">
-            <span className="font-semibold">Full Name:</span> {profile.fullName}
-          </div>
-          <div className="text-lg text-gray-700">
-            <span className="font-semibold">Phone:</span> {profile.phone}
-          </div>
-          <div className="text-lg text-gray-700">
-            <span className="font-semibold">Email:</span> {profile.email}
+            {loading ? (
+              <p className="text-center text-gray-500">Loading...</p>
+            ) : error ? (
+              <div className="p-4 bg-red-50 border border-red-100 rounded-xl animate-fadeIn flex items-start">
+                <p className="text-red-800 text-sm">{error}</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="relative group">
+                  <label className="block mb-1">Full Name</label>
+                  <input
+                    type="text"
+                    value={profile?.fullName || "Not available"}
+                    disabled
+                    className="w-full pl-3 pr-4 py-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200 outline-none text-gray-800"
+                  />
+                </div>
+
+                <div className="relative group">
+                  <label className="block mb-1">Phone</label>
+                  <input
+                    type="text"
+                    value={profile?.phone || "Not available"}
+                    disabled
+                    className="w-full pl-3 pr-4 py-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200 outline-none text-gray-800"
+                  />
+                </div>
+
+                <div className="relative group">
+                  <label className="block mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={profile?.email || "Not available"}
+                    disabled
+                    className="w-full pl-3 pr-4 py-3.5 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all duration-200 outline-none text-gray-800"
+                  />
+                </div>
+              </div>
+            )}
+            <div className="mt-8 text-center">
+              <a
+                href="/edit-profile"
+                className="text-blue-500 hover:text-blue-700 text-sm font-medium transition-colors duration-200"
+              >
+                Edit Profile
+              </a>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

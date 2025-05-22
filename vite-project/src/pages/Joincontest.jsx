@@ -10,6 +10,7 @@ import {
   Input,
   SubmitButton,
 } from "@/components/styled";
+import Navbar from "./Navbar";
 
 function Joincontest() {
   const [contestCode, setContestCode] = useState("");
@@ -76,7 +77,10 @@ function Joincontest() {
       });
     } catch (err) {
       setError("Invalid contest code or contest not found");
-      console.error("Error joining contest:", err.response?.data || err.message);
+      console.error(
+        "Error joining contest:",
+        err.response?.data || err.message
+      );
     }
   };
 
@@ -95,6 +99,7 @@ function Joincontest() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
+      <Navbar />
       <Heading>Join Contest</Heading>
       {!contestDetails ? (
         <StyledForm onSubmit={handleSubmit}>

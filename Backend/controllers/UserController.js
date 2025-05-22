@@ -156,7 +156,6 @@ export const forgetPassword = catchAsyncErr(async (req, res, next) => {
   await User.save({ validateBeforeSave: false });
 
   const resetPasswordUrl = `${process.env.FRONTEND_URL}/password/reset/${resetToken}`;
-
   const message = `Your password reset token is:\n\n${resetPasswordUrl}\n\nIf you did not request this, please ignore it.`;
 
   try {
@@ -165,11 +164,9 @@ export const forgetPassword = catchAsyncErr(async (req, res, next) => {
       subject: "Password Recovery",
       message,
     });
-
-    res.status(200).json({
-      success: true,
-      message: `Reset link sent to ${User.email}`,
-    });
+    res
+      .status(200)
+      .json({ success: true, message: `Reset link sent to ${User.email}` });
   } catch (error) {
     User.resetPasswordToken = undefined;
     User.resetPasswordExpire = undefined;
@@ -206,7 +203,6 @@ export const resetPassword = catchAsyncErr(async (req, res, next) => {
   User.resetPasswordExpire = undefined;
 
   await User.save();
-
   generateToken(User, "Password Reset Successfully", 200, res);
 });
 
