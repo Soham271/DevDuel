@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Container,
   Heading,
@@ -184,19 +185,33 @@ function CreateContest() {
         </SubmitButton>
       </StyledForm>
 
-      {/* Contest Created Modal */}
-      {showModal && (
-        <ModalOverlay>
-          <ModalContent>
-            <ModalMessage>Contest Created Successfully!</ModalMessage>
-            <ModalCode onClick={handleCodeClick} style={{ cursor: "pointer" }}>
-              {contestCode}
-            </ModalCode>
-            <CopyNote>Click on code to copy</CopyNote>
-            {copied && <CopiedToast>Code copied successfully!</CopiedToast>}
-          </ModalContent>
-        </ModalOverlay>
-      )}
+      {/* Contest Created Modal with Animation */}
+      <AnimatePresence>
+        {showModal && (
+          <ModalOverlay
+            as={motion.div}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ModalContent
+              as={motion.div}
+              initial={{ scale: 0.8, opacity: 0, y: 40 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 40 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              <ModalMessage>Contest Created Successfully!</ModalMessage>
+              <ModalCode onClick={handleCodeClick} style={{ cursor: "pointer" }}>
+                {contestCode}
+              </ModalCode>
+              <CopyNote>Click on code to copy</CopyNote>
+              {copied && <CopiedToast>Code copied successfully!</CopiedToast>}
+            </ModalContent>
+          </ModalOverlay>
+        )}
+      </AnimatePresence>
 
       {/* Terms and Conditions Modal */}
       <TermsModal

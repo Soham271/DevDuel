@@ -9,8 +9,15 @@ const problems = [
     sampleInput: "3 5",
     sampleOutput: "8",
     testCases: [
-      { input: "2 3", output: "5" },
-      { input: "-1 6", output: "5" },
+      {
+        "input": "3 5",
+        "output": "8"
+
+      },
+      {
+        "input": "-2 4",
+        "output":"2"
+      }
     ],
     difficulty: "Easy",
   },

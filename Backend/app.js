@@ -12,6 +12,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Server } from "socket.io";
 import { createServer } from "http";
+import codeRoutes from "./router/code.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -52,6 +53,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/contenst", contestRoutes);
 app.use("/api/v1/joinBattle", JoinbattleRoutes);
+app.use("api/v1/code",codeRoutes);
 
 dbConnect();
 

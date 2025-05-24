@@ -1,3 +1,4 @@
+// ... imports remain the same
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -10,7 +11,7 @@ import {
   Title,
   Description,
   FormatText,
-  OutputBox
+  OutputBox,
 } from "@/components/StyledComponents";
 import CustomButton from "@/components/CustomButton";
 import { ToastContainer, toast } from "react-toastify";
@@ -28,6 +29,7 @@ const JoinBattle = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { contestCode } = location.state || {};
+  const [runResults, setRunResults] = useState([]);
 
   const [contest, setContest] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
@@ -87,7 +89,9 @@ const JoinBattle = () => {
         if (filtered.length > 0) setProblem(filtered[0]);
 
         const langObj = languageMap[contestData.Language];
-        if (langObj) setLanguage(langObj.editorLang);
+        if (langObj) {
+          setLanguage(langObj.editorLang);
+        }
       })
       .catch((err) => {
         console.error(err);
@@ -102,7 +106,6 @@ const JoinBattle = () => {
       setTimeLeft((prev) => {
         const next = prev - 1;
 
-        // Show 1-minute warning
         if (next === 60 && !oneMinuteLeftShown) {
           toast.warn("⚠️ Only 1 minute left!", {
             position: "top-center",
@@ -111,7 +114,6 @@ const JoinBattle = () => {
           setOneMinuteLeftShown(true);
         }
 
-        // Contest end
         if (next <= 0) {
           clearInterval(timer);
           localStorage.removeItem("contestStartTime");
@@ -131,53 +133,104 @@ const JoinBattle = () => {
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
     const secsR = secs % 60;
-    return `${mins.toString().padStart(2, "0")}:${secsR
-      .toString()
-      .padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secsR.toString().padStart(2, "0")}`;
   };
 
-  const runCode = async () => {
+  const handleRunAllTestCases = async () => {
     setIsRunning(true);
-    setOutput("Running...");
+    setOutput("Running test cases...");
 
     const langEntry = Object.entries(languageMap).find(
       ([, val]) => val.editorLang === language
     );
-    const language_id = langEntry?.[1]?.id;
-    if (!language_id) {
-      setOutput("Unsupported language selected.");
+    const languageId = langEntry?.[1]?.id;
+
+    if (!problem || !code || !languageId) {
+      toast.error("Missing code, language or problem.");
       setIsRunning(false);
       return;
     }
 
-    const testCase = problem?.testCases?.[0] || { input: "", output: "" };
-
-    try {
-      const { data } = await axios.post(
-        "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true",
-        {
-          source_code: code,
-          language_id,
-          stdin: testCase.input,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "X-RapidAPI-Key": "46aa234c9dmsh883ebe8a023ae11p1ee065jsn0b4eb6176b52",
-            "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
-          },
-        }
-      );
-
-      const resultOutput =
-        data.stdout || data.stderr || data.compile_output || "No output";
-      setOutput(resultOutput);
-    } catch (err) {
-      console.error(err);
-      setOutput("Error executing code.");
+    if (!problem.testCases || problem.testCases.length === 0) {
+      toast.error("No test cases available.");
+      setIsRunning(false);
+      return;
     }
 
-    setIsRunning(false);
+    try {
+      const results = await Promise.all(
+        problem.testCases.map(async (testCase, index) => {
+          if (!testCase.input || !testCase.output) {
+            return {
+              index: index + 1,
+              passed: false,
+              output: "Missing input/output",
+              expected: testCase.output || "undefined",
+              input: testCase.input || "undefined",
+              status: "Skipped",
+            };
+          }
+
+          try {
+            const { data } = await axios.post(
+              "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true",
+              {
+                source_code: btoa(code),
+                language_id: languageId,
+                stdin: btoa(testCase.input),
+                expected_output: btoa(testCase.output),
+              },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-RapidAPI-Key": "cfe47cc9e9msh5255118aa221a2cp16a358jsnabc9e0ddbcc7",
+                  "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+                },
+              }
+            );
+
+            console.log("Judge0 response:", data);
+
+            const passed = data.status.description === "Accepted";
+            return {
+              index: index + 1,
+              passed,
+              output: data.stdout ? atob(data.stdout) : data.stderr ? atob(data.stderr) : "No output",
+              expected: testCase.output,
+              input: testCase.input,
+              status: data.status.description,
+            };
+          } catch (err) {
+            console.error("Error with test case", index + 1, err);
+            return {
+              index: index + 1,
+              passed: false,
+              output: "Error during execution",
+              expected: testCase.output,
+              input: testCase.input,
+              status: "Execution Failed",
+            };
+          }
+        })
+      );
+
+      setRunResults(results);
+
+      const allPassed = results.every((r) => r.passed);
+      if (allPassed) {
+        toast.success("🎉 All test cases passed! Redirecting...");
+        setTimeout(() => {
+          localStorage.removeItem("contestStartTime");
+          localStorage.removeItem("contestDuration");
+          localStorage.removeItem("userCode");
+          navigate("/contest-ended");
+        }, 2000);
+      } else {
+        toast.info("Some test cases failed.");
+      }
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const handleCopyCode = () => {
@@ -193,8 +246,6 @@ const JoinBattle = () => {
   return (
     <PageWrapper>
       <ToastContainer />
-
-      {/* Problem Panel */}
       <ProblemPanel>
         <Title>{problem.title}</Title>
         <Description>{problem.description}</Description>
@@ -207,11 +258,9 @@ const JoinBattle = () => {
           <br />
           <b>Sample Output:</b> {problem.sampleOutput}
         </FormatText>
-
         <div style={{ marginTop: "20px", fontWeight: "bold", color: "#555" }}>
           ⏳ Time Left: {formatTime(timeLeft)}
         </div>
-
         <div style={{ marginTop: "12px" }}>
           <span
             onClick={handleCopyCode}
@@ -230,9 +279,11 @@ const JoinBattle = () => {
             📋 Contest Code: {contestCode}
           </span>
         </div>
+        <div style={{ marginTop: "12px", color: "#222", fontSize: "14px" }}>
+          <b>Language Selected:</b> {contest.Language}
+        </div>
       </ProblemPanel>
 
-      {/* Code Editor Panel */}
       <EditorPanel>
         <MonacoEditor
           height="400px"
@@ -242,14 +293,55 @@ const JoinBattle = () => {
             setCode(val || "");
             localStorage.setItem("userCode", val || "");
           }}
-          options={{ minimap: { enabled: false }, fontSize: 14 }}
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            readOnly: false,
+          }}
         />
         <div style={{ marginTop: "10px" }}>
-          <CustomButton onClick={runCode} disabled={isRunning}>
-            {isRunning ? "Running..." : "Run Code"}
-          </CustomButton>
+          <button
+            onClick={handleRunAllTestCases}
+            disabled={isRunning}
+            style={{
+              marginLeft: "10px",
+              padding: "8px 12px",
+              backgroundColor: "#4caf50",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              opacity: isRunning ? 0.6 : 1,
+            }}
+          >
+            {isRunning ? "Running..." : "Run All Test Cases"}
+          </button>
           <OutputBox>{output}</OutputBox>
         </div>
+
+        {runResults.length > 0 && (
+          <div className="terminal-output" style={{ marginTop: "20px" }}>
+            {runResults.map((res, i) => (
+              <div key={i}>
+                <strong>Test Case {res.index}:</strong> {res.passed ? "✅ Passed" : "❌ Failed"}
+                <br />
+                <strong>Input:</strong> {res.input}
+                <br />
+                <strong>Expected Output:</strong> {res.expected}
+                <br />
+                <strong>Your Output:</strong> {res.output}
+                <br />
+                <strong>Status:</strong> {res.status}
+                <hr />
+              </div>
+            ))}
+            {runResults.every((r) => r.passed) && (
+              <div style={{ color: "green", fontWeight: "bold" }}>
+                ✅ All Test Cases Passed!
+              </div>
+            )}
+          </div>
+        )}
       </EditorPanel>
     </PageWrapper>
   );
