@@ -30,6 +30,7 @@ const JoinBattle = () => {
   const navigate = useNavigate();
   const { contestCode } = location.state || {};
   const [runResults, setRunResults] = useState([]);
+
   const [contest, setContest] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [problem, setProblem] = useState(null);
@@ -41,8 +42,7 @@ const JoinBattle = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
   const [oneMinuteLeftShown, setOneMinuteLeftShown] = useState(false);
-
-  const JUDGE0_API_KEY = "7cb0985fbcmshba42bf66954f709p1ae652jsneb217c42f501";
+  const [allTestCasesPassed, setAllTestCasesPassed] = useState(false);
 
   useEffect(() => {
     if (!contestCode) {
@@ -74,9 +74,7 @@ const JoinBattle = () => {
         const storedDuration = localStorage.getItem("contestDuration");
 
         if (storedStartTime && storedDuration) {
-          const elapsed = Math.floor(
-            (Date.now() - parseInt(storedStartTime)) / 1000
-          );
+          const elapsed = Math.floor((Date.now() - parseInt(storedStartTime)) / 1000);
           const remaining = parseInt(storedDuration) - elapsed;
           setTimeLeft(Math.max(remaining, 0));
         } else {
@@ -110,7 +108,7 @@ const JoinBattle = () => {
         const next = prev - 1;
 
         if (next === 60 && !oneMinuteLeftShown) {
-          toast.warn("⚠ Only 1 minute left!", {
+          toast.warn("⚠️ Only 1 minute left!", {
             position: "top-center",
             autoClose: 3000,
           });
@@ -136,23 +134,7 @@ const JoinBattle = () => {
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
     const secsR = secs % 60;
-    return `${mins.toString().padStart(2, "0")}:${secsR
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  // Retry mechanism with exponential backoff
-  const retryWithBackoff = async (fn, retries = 3, delay = 5000) => {
-    for (let i = 0; i < retries; i++) {
-      try {
-        return await fn();
-      } catch (err) {
-        if (err.response?.status !== 429 || i === retries - 1) throw err;
-        const backoffDelay = delay * Math.pow(2, i); // Exponential backoff: 5s, 10s, 20s
-        toast.warn(`Rate limit hit, retrying in ${backoffDelay / 1000}s...`);
-        await new Promise((res) => setTimeout(res, backoffDelay));
-      }
-    }
+    return `${mins.toString().padStart(2, "0")}:${secsR.toString().padStart(2, "0")}`;
   };
 
   const handleRunAllTestCases = async () => {
@@ -176,126 +158,91 @@ const JoinBattle = () => {
       return;
     }
 
-    // Check if API key is set
-    if (!JUDGE0_API_KEY || JUDGE0_API_KEY === "your_new_rapidapi_key_here") {
-      toast.error(
-        "API key is missing. Please update JUDGE0_API_KEY in JoinBattle.jsx."
-      );
-      setIsRunning(false);
-      return;
-    }
+    try {
+      const results = await Promise.all(
+        problem.testCases.map(async (testCase, index) => {
+          if (!testCase.input || !testCase.output) {
+            return {
+              index: index + 1,
+              passed: false,
+              output: "Missing input/output",
+              expected: testCase.output || "undefined",
+              input: testCase.input || "undefined",
+              status: "Skipped",
+            };
+          }
 
-    const results = [];
-    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-    // Limit to 2 test cases for testing to reduce API calls
-    const testCasesToRun = problem.testCases.slice(0, 2);
-
-    for (let index = 0; index < testCasesToRun.length; index++) {
-      const testCase = testCasesToRun[index];
-
-      if (!testCase.input || !testCase.output) {
-        results.push({
-          index: index + 1,
-          passed: false,
-          output: "Missing input/output",
-          expected: testCase.output || "undefined",
-          input: testCase.input || "undefined",
-          status: "Skipped",
-        });
-        continue;
-      }
-
-      try {
-        const response = await retryWithBackoff(() =>
-          axios.post(
-            "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true",
-            {
-              source_code: btoa(code),
-              language_id: languageId,
-              stdin: btoa(testCase.input),
-              expected_output: btoa(testCase.output),
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-                "X-RapidAPI-Key": JUDGE0_API_KEY,
-                "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+          try {
+            const { data } = await axios.post(
+              "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=true",
+              {
+                source_code: btoa(code),
+                language_id: languageId,
+                stdin: btoa(testCase.input),
+                expected_output: btoa(testCase.output),
               },
-            }
-          )
-        );
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  "X-RapidAPI-Key": "d01622f8c2msh16e1b9d9c0a8c6cp1e5ef1jsn002af3295742",
+                  "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+                },
+              }
+            );
 
-        const data = response.data;
-        const outputText = data.stdout
-          ? atob(data.stdout).trim()
-          : data.stderr
-          ? atob(data.stderr).trim()
-          : "No output";
+            console.log("Judge0 response:", data);
 
-        const expectedText = testCase.output.trim();
-        const passed = outputText === expectedText;
+            const passed = data.status.description === "Accepted";
+            return {
+              index: index + 1,
+              passed,
+              output: data.stdout ? atob(data.stdout) : data.stderr ? atob(data.stderr) : "No output",
+              expected: testCase.output,
+              input: testCase.input,
+              status: data.status.description,
+            };
+          } catch (err) {
+            console.error("Error with test case", index + 1, err);
+            return {
+              index: index + 1,
+              passed: false,
+              output: "Error during execution",
+              expected: testCase.output,
+              input: testCase.input,
+              status: "Execution Failed",
+            };
+          }
+        })
+      );
 
-        results.push({
-          index: index + 1,
-          passed,
-          output: outputText,
-          expected: expectedText,
-          input: testCase.input,
-          status: data.status.description,
-        });
-      } catch (err) {
-        console.error(
-          "Error with test case",
-          index + 1,
-          err.response?.status,
-          err.response?.data || err.message
-        );
-        let errorMessage = "Error during execution";
-        let status = "Execution Failed";
+      setRunResults(results);
 
-        if (err.response?.status === 403) {
-          errorMessage = "Authentication failed (403). Check your API key.";
-          status = "Auth Failed";
-          toast.error(
-            "Invalid API key. Please update your RapidAPI key in JoinBattle.jsx."
-          );
-        } else if (err.response?.status === 429) {
-          errorMessage = "Rate limit exceeded (429). Try again later.";
-          status = "Rate Limit Exceeded";
-          toast.error("Rate limit exceeded. Please wait and try again.");
-        }
+      const allPassed = results.every((r) => r.passed);
+      setAllTestCasesPassed(allPassed);
 
-        results.push({
-          index: index + 1,
-          passed: false,
-          output: errorMessage,
-          expected: testCase.output,
-          input: testCase.input,
-          status,
-        });
+      if (allPassed) {
+        toast.success("🎉 All test cases passed! You can now submit.");
+      } else {
+        toast.info("Some test cases failed.");
       }
-
-      // Delay between requests to avoid 429 errors (5 seconds)
-      await delay(5000);
+    } finally {
+      setIsRunning(false);
     }
+  };
 
-    setRunResults(results);
-
-    const allPassed = results.every((r) => r.passed);
-    if (allPassed) {
-      toast.success("🎉 All test cases passed! Redirecting...");
+  // New submit handler
+  const handleSubmit = () => {
+    if (allTestCasesPassed) {
+      toast.success("Submitting and redirecting...");
       setTimeout(() => {
         localStorage.removeItem("contestStartTime");
         localStorage.removeItem("contestDuration");
         localStorage.removeItem("userCode");
-        navigate("/contest-ended");
-      }, 2000);
+        navigate("/leaderboard");
+      }, 1500);
     } else {
-      toast.info("Some test cases failed.");
+      toast.error("You must pass all test cases before submitting!");
     }
-
-    setIsRunning(false);
   };
 
   const handleCopyCode = () => {
@@ -351,63 +298,83 @@ const JoinBattle = () => {
 
       <EditorPanel>
         <MonacoEditor
-          height="400px"
+          height="500px"
           language={language}
           value={code}
-          onChange={(val) => {
-            setCode(val || "");
-            localStorage.setItem("userCode", val || "");
+          onChange={(value) => {
+            setCode(value);
+            localStorage.setItem("userCode", value || "");
           }}
           options={{
             minimap: { enabled: false },
-            fontSize: 14,
-            readOnly: false,
+            fontSize: 16,
           }}
         />
-        <div style={{ marginTop: "10px" }}>
+        <div
+          style={{
+            marginTop: "12px",
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
           <button
             onClick={handleRunAllTestCases}
             disabled={isRunning}
             style={{
-              marginLeft: "10px",
               padding: "8px 12px",
               backgroundColor: "#4caf50",
               color: "#fff",
               border: "none",
               borderRadius: "5px",
-              cursor: "pointer",
+              cursor: isRunning ? "not-allowed" : "pointer",
               opacity: isRunning ? 0.6 : 1,
             }}
           >
             {isRunning ? "Running..." : "Run All Test Cases"}
           </button>
-          <OutputBox>{output}</OutputBox>
+
+          <button
+            onClick={handleSubmit}
+            disabled={isRunning}
+            style={{
+              padding: "8px 12px",
+              backgroundColor: "#2196f3",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: isRunning ? "not-allowed" : "pointer",
+              opacity: isRunning ? 0.6 : 1,
+            }}
+          >
+            Submit
+          </button>
         </div>
 
-        {runResults.length > 0 && (
-          <div className="terminal-output" style={{ marginTop: "20px" }}>
-            {runResults.map((res, i) => (
-              <div key={i}>
-                <strong>Test Case {res.index}:</strong>{" "}
-                {res.passed ? "✅ Passed" : "❌ Failed"}
-                <br />
-                <strong>Input:</strong> {res.input}
-                <br />
-                <strong>Expected Output:</strong> {res.expected}
-                <br />
-                <strong>Your Output:</strong> {res.output}
-                <br />
-                <strong>Status:</strong> {res.status}
-                <hr />
-              </div>
-            ))}
-            {runResults.every((r) => r.passed) && (
-              <div style={{ color: "green", fontWeight: "bold" }}>
-                ✅ All Test Cases Passed!
-              </div>
-            )}
-          </div>
-        )}
+        <OutputBox>
+          <h3>Test Case Results:</h3>
+          {runResults.length === 0 && <p>No test cases run yet.</p>}
+          {runResults.map((result) => (
+            <div
+              key={result.index}
+              style={{
+                marginBottom: "10px",
+                padding: "8px",
+                borderRadius: "5px",
+                backgroundColor: result.passed ? "#d4edda" : "#f8d7da",
+                color: result.passed ? "#155724" : "#721c24",
+                border: `1px solid ${result.passed ? "#c3e6cb" : "#f5c6cb"}`,
+              }}
+            >
+              <b>Test Case {result.index}:</b> {result.status}
+              <br />
+              <b>Input:</b> <pre>{result.input}</pre>
+              <b>Expected Output:</b> <pre>{result.expected}</pre>
+              <b>Your Output:</b> <pre>{result.output}</pre>
+            </div>
+          ))}
+        </OutputBox>
       </EditorPanel>
     </PageWrapper>
   );
