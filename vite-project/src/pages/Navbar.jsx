@@ -56,7 +56,7 @@ const Navbar = () => {
   const dropdownOptions = [
     { name: "Profile", path: "/profile" },
     { name: "Edit Profile", path: "/edit-profile" },
-    { name: "Leaderboard", path: "/leaderboard" },
+    { name: "Contest-Details", path: "/details" },
   ];
 
   return (

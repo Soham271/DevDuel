@@ -25,18 +25,41 @@ const languageMap = {
   JavaScript: { id: 63, editorLang: "javascript" },
 };
 
+const predefinedFunctions = {
+  javascript: `function solve(input) {
+  // Your code here
+
+}`,
+  python: `def solve(input):
+  # Your code here
+  pass`,
+  java: `public class Solution {
+  public static void solve(String input) {
+    // Your code here
+  }
+}`,
+  cpp: `#include <iostream>
+using namespace std;
+
+void solve(string input) {
+  // Your code here
+}`,
+  c: `#include <stdio.h>
+
+void solve(char *input) {
+  // Your code here
+}`,
+};
+
 const JoinBattle = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { contestCode } = location.state || {};
   const [runResults, setRunResults] = useState([]);
-
   const [contest, setContest] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [problem, setProblem] = useState(null);
-  const [code, setCode] = useState(() => {
-    return localStorage.getItem("userCode") || "// Write your code here";
-  });
+  const [code, setCode] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
@@ -73,7 +96,9 @@ const JoinBattle = () => {
         const storedDuration = localStorage.getItem("contestDuration");
 
         if (storedStartTime && storedDuration) {
-          const elapsed = Math.floor((Date.now() - parseInt(storedStartTime)) / 1000);
+          const elapsed = Math.floor(
+            (Date.now() - parseInt(storedStartTime)) / 1000
+          );
           const remaining = parseInt(storedDuration) - elapsed;
           setTimeLeft(Math.max(remaining, 0));
         } else {
@@ -91,6 +116,9 @@ const JoinBattle = () => {
         const langObj = languageMap[contestData.Language];
         if (langObj) {
           setLanguage(langObj.editorLang);
+          // Remove predefined function; just load saved code or empty string
+          const savedCode = localStorage.getItem("userCode");
+          setCode(savedCode || "");
         }
       })
       .catch((err) => {
@@ -133,7 +161,9 @@ const JoinBattle = () => {
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
     const secsR = secs % 60;
-    return `${mins.toString().padStart(2, "0")}:${secsR.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secsR
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const handleRunAllTestCases = async () => {
@@ -183,19 +213,22 @@ const JoinBattle = () => {
               {
                 headers: {
                   "Content-Type": "application/json",
-                  "X-RapidAPI-Key": "cfe47cc9e9msh5255118aa221a2cp16a358jsnabc9e0ddbcc7",
+                  "X-RapidAPI-Key":
+                    "cfe47cc9e9msh5255118aa221a2cp16a358jsnabc9e0ddbcc7",
                   "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
                 },
               }
             );
 
-            console.log("Judge0 response:", data);
-
             const passed = data.status.description === "Accepted";
             return {
               index: index + 1,
               passed,
-              output: data.stdout ? atob(data.stdout) : data.stderr ? atob(data.stderr) : "No output",
+              output: data.stdout
+                ? atob(data.stdout)
+                : data.stderr
+                ? atob(data.stderr)
+                : "No output",
               expected: testCase.output,
               input: testCase.input,
               status: data.status.description,
@@ -246,7 +279,13 @@ const JoinBattle = () => {
   return (
     <PageWrapper>
       <ToastContainer />
-      <ProblemPanel>
+      <ProblemPanel
+        style={{
+          backgroundColor: "#f9f9f9",
+          borderRadius: "8px",
+          padding: "20px",
+        }}
+      >
         <Title>{problem.title}</Title>
         <Description>{problem.description}</Description>
         <FormatText>
@@ -267,12 +306,11 @@ const JoinBattle = () => {
             style={{
               display: "inline-block",
               padding: "6px 12px",
-              backgroundColor: "#f2f2f2",
+              backgroundColor: "#e0e0e0",
               borderRadius: "10px",
               border: "1px solid #ccc",
               fontWeight: 500,
               cursor: "pointer",
-              userSelect: "none",
             }}
             title="Click to copy"
           >
@@ -286,7 +324,7 @@ const JoinBattle = () => {
 
       <EditorPanel>
         <MonacoEditor
-          height="400px"
+          height="450px"
           language={language}
           value={code}
           onChange={(val) => {
@@ -296,34 +334,54 @@ const JoinBattle = () => {
           options={{
             minimap: { enabled: false },
             fontSize: 14,
-            readOnly: false,
+            lineNumbers: "on",
+            wordWrap: "on",
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+            fontFamily: "Fira Code, monospace",
+            theme: "vs-dark",
           }}
         />
-        <div style={{ marginTop: "10px" }}>
+        <div
+          style={{ marginTop: "10px", display: "flex", alignItems: "center" }}
+        >
           <button
             onClick={handleRunAllTestCases}
             disabled={isRunning}
             style={{
-              marginLeft: "10px",
-              padding: "8px 12px",
-              backgroundColor: "#4caf50",
+              padding: "8px 14px",
+              backgroundColor: "#007acc",
               color: "#fff",
               border: "none",
               borderRadius: "5px",
               cursor: "pointer",
               opacity: isRunning ? 0.6 : 1,
+              fontWeight: "bold",
             }}
           >
             {isRunning ? "Running..." : "Run All Test Cases"}
           </button>
-          <OutputBox>{output}</OutputBox>
+          <OutputBox style={{ marginLeft: "15px", flex: 1 }}>
+            {output}
+          </OutputBox>
         </div>
 
         {runResults.length > 0 && (
-          <div className="terminal-output" style={{ marginTop: "20px" }}>
+          <div
+            className="terminal-output"
+            style={{
+              marginTop: "20px",
+              backgroundColor: "#111",
+              color: "#eee",
+              padding: "10px",
+              borderRadius: "8px",
+              fontFamily: "monospace",
+            }}
+          >
             {runResults.map((res, i) => (
               <div key={i}>
-                <strong>Test Case {res.index}:</strong> {res.passed ? "✅ Passed" : "❌ Failed"}
+                <strong>Test Case {res.index}:</strong>{" "}
+                {res.passed ? "✅ Passed" : "❌ Failed"}
                 <br />
                 <strong>Input:</strong> {res.input}
                 <br />
@@ -336,7 +394,7 @@ const JoinBattle = () => {
               </div>
             ))}
             {runResults.every((r) => r.passed) && (
-              <div style={{ color: "green", fontWeight: "bold" }}>
+              <div style={{ color: "lime", fontWeight: "bold" }}>
                 ✅ All Test Cases Passed!
               </div>
             )}

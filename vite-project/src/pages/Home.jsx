@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import LocomotiveScroll from "locomotive-scroll";
+import LocomotiveScroll from "locomotive-scroll/dist/locomotive-scroll";
+
 import "locomotive-scroll/dist/locomotive-scroll.css";
 import { useSelector } from "react-redux";
 import Navbar from "./Navbar";
@@ -69,7 +70,7 @@ const Home = () => {
 
     return () => {
       scroll.destroy();
-      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
     };
   }, []);
 
