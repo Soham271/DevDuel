@@ -1,4 +1,3 @@
-// ... imports remain the same
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -24,25 +23,25 @@ const languageMap = {
   Python: { id: 71, editorLang: "python" },
   JavaScript: { id: 63, editorLang: "javascript" },
 };
-import { useSelector } from "react-redux";
 
 const JoinBattle = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { contestCode } = location.state || {};
   const [runResults, setRunResults] = useState([]);
+
   const [contest, setContest] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [problem, setProblem] = useState(null);
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState(() => {
+    return localStorage.getItem("userCode") || "// Write your code here";
+  });
   const [language, setLanguage] = useState("javascript");
   const [output, setOutput] = useState("");
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
   const [oneMinuteLeftShown, setOneMinuteLeftShown] = useState(false);
-  const [canSubmit, setCanSubmit] = useState(false);
 
-   const user = useSelector((state) => state.user.user);
   useEffect(() => {
     if (!contestCode) {
       setError("No contest code provided.");
@@ -50,6 +49,7 @@ const JoinBattle = () => {
     }
 
     const hasShownToast = sessionStorage.getItem("contestToastShown");
+
     if (!hasShownToast) {
       toast.success("Contest Started, All the best!", {
         position: "top-center",
@@ -92,8 +92,6 @@ const JoinBattle = () => {
         const langObj = languageMap[contestData.Language];
         if (langObj) {
           setLanguage(langObj.editorLang);
-          const savedCode = localStorage.getItem("userCode");
-          setCode(savedCode || "");
         }
       })
       .catch((err) => {
@@ -195,6 +193,8 @@ const JoinBattle = () => {
               }
             );
 
+            console.log("Judge0 response:", data);
+
             const passed = data.status.description === "Accepted";
             return {
               index: index + 1,
@@ -209,6 +209,7 @@ const JoinBattle = () => {
               status: data.status.description,
             };
           } catch (err) {
+            console.error("Error with test case", index + 1, err);
             return {
               index: index + 1,
               passed: false,
@@ -222,11 +223,16 @@ const JoinBattle = () => {
       );
 
       setRunResults(results);
-      const allPassed = results.every((r) => r.passed);
-      setCanSubmit(allPassed);
 
+      const allPassed = results.every((r) => r.passed);
       if (allPassed) {
-        toast.success("🎉 All test cases passed! You can now submit.");
+        toast.success("🎉 All test cases passed! Redirecting...");
+        setTimeout(() => {
+          localStorage.removeItem("contestStartTime");
+          localStorage.removeItem("contestDuration");
+          localStorage.removeItem("userCode");
+          navigate("/contest-ended");
+        }, 2000);
       } else {
         toast.info("Some test cases failed.");
       }
@@ -242,39 +248,13 @@ const JoinBattle = () => {
     }
   };
 
-  const handleSubmit = async() => {
-   const endTime = Date.now();
-  const startTime = parseInt(localStorage.getItem("contestStartTime"));
-  const duration = Math.floor((endTime - startTime) / 1000); // in seconds
-
-  const testCasesPassed = runResults.filter((res) => res.passed).length;
-
-  try {
-    await axios.post("http://localhost:3004/api/v1/leaderboard/submit", {
-      userId: user.fullName, 
-      contestCode,
-      timeTaken: duration,
-      testCasesPassed,
-    });
-
-    localStorage.removeItem("contestStartTime");
-    localStorage.removeItem("contestDuration");
-    localStorage.removeItem("userCode");
-
-    navigate("/leaderboard");
-  } catch (err) {
-    toast.error("Failed to submit to leaderboard.");
-    console.error(err);
-  }
-  };
-
   if (error) return <div>{error}</div>;
   if (!contest || !problem) return <div>Loading contest or problem...</div>;
 
   return (
     <PageWrapper>
       <ToastContainer />
-      <ProblemPanel style={{ backgroundColor: "#f9f9f9", borderRadius: "8px", padding: "20px" }}>
+      <ProblemPanel>
         <Title>{problem.title}</Title>
         <Description>{problem.description}</Description>
         <FormatText>
@@ -290,15 +270,20 @@ const JoinBattle = () => {
           ⏳ Time Left: {formatTime(timeLeft)}
         </div>
         <div style={{ marginTop: "12px" }}>
-          <span onClick={handleCopyCode} style={{
-            display: "inline-block",
-            padding: "6px 12px",
-            backgroundColor: "#e0e0e0",
-            borderRadius: "10px",
-            border: "1px solid #ccc",
-            fontWeight: 500,
-            cursor: "pointer",
-          }} title="Click to copy">
+          <span
+            onClick={handleCopyCode}
+            style={{
+              display: "inline-block",
+              padding: "6px 12px",
+              backgroundColor: "#f2f2f2",
+              borderRadius: "10px",
+              border: "1px solid #ccc",
+              fontWeight: 500,
+              cursor: "pointer",
+              userSelect: "none",
+            }}
+            title="Click to copy"
+          >
             📋 Contest Code: {contestCode}
           </span>
         </div>
@@ -309,7 +294,7 @@ const JoinBattle = () => {
 
       <EditorPanel>
         <MonacoEditor
-          height="450px"
+          height="400px"
           language={language}
           value={code}
           onChange={(val) => {
@@ -319,63 +304,31 @@ const JoinBattle = () => {
           options={{
             minimap: { enabled: false },
             fontSize: 14,
-            lineNumbers: "on",
-            wordWrap: "on",
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            fontFamily: "Fira Code, monospace",
-            theme: "vs-dark",
+            readOnly: false,
           }}
         />
-        <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ marginTop: "10px" }}>
           <button
             onClick={handleRunAllTestCases}
             disabled={isRunning}
             style={{
-              padding: "8px 14px",
-              backgroundColor: "#007acc",
+              marginLeft: "10px",
+              padding: "8px 12px",
+              backgroundColor: "#4caf50",
               color: "#fff",
               border: "none",
               borderRadius: "5px",
               cursor: "pointer",
               opacity: isRunning ? 0.6 : 1,
-              fontWeight: "bold",
             }}
           >
-            {isRunning ? "Running..." : "Run"}
+            {isRunning ? "Running..." : "Run All Test Cases"}
           </button>
-
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            style={{
-              padding: "8px 14px",
-              backgroundColor: canSubmit ? "#28a745" : "#aaa",
-              color: "#fff",
-              border: "none",
-              borderRadius: "5px",
-              cursor: canSubmit ? "pointer" : "not-allowed",
-              fontWeight: "bold",
-            }}
-          >
-            Submit
-          </button>
-
-          <OutputBox style={{ flex: 1 }}>{output}</OutputBox>
+          <OutputBox>{output}</OutputBox>
         </div>
 
         {runResults.length > 0 && (
-          <div
-            className="terminal-output"
-            style={{
-              marginTop: "20px",
-              backgroundColor: "#111",
-              color: "#eee",
-              padding: "10px",
-              borderRadius: "8px",
-              fontFamily: "monospace",
-            }}
-          >
+          <div className="terminal-output" style={{ marginTop: "20px" }}>
             {runResults.map((res, i) => (
               <div key={i}>
                 <strong>Test Case {res.index}:</strong>{" "}
@@ -392,7 +345,7 @@ const JoinBattle = () => {
               </div>
             ))}
             {runResults.every((r) => r.passed) && (
-              <div style={{ color: "lime", fontWeight: "bold" }}>
+              <div style={{ color: "green", fontWeight: "bold" }}>
                 ✅ All Test Cases Passed!
               </div>
             )}
