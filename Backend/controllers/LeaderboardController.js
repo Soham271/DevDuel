@@ -1,22 +1,24 @@
 import { catchAsyncErr } from '../middleware/catchasyncErr.js'
 import  Leaderboard from '../model/LeaderBoard.js'
-export const CreateLeaderboard=catchAsyncErr(async(req,res,next)=>{
- const { userId, contestCode, timeTaken, testCasesPassed } = req.body;
+export const CreateLeaderboard = catchAsyncErr(async (req, res, next) => {
+  const { userId, contestCode, timeTaken, testCasesPassed } = req.body;
 
   try {
-    await Leaderboard.create({
-      userId,
-      contestCode,
-      timeTaken,
-      testCasesPassed,
-      submittedAt: new Date(),
-    });
+    await Leaderboard.findOneAndUpdate(
+      { userId, contestCode },
+      {
+        timeTaken,
+        testCasesPassed,
+        submittedAt: new Date(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
-    res.status(201).json({ message: "Submitted successfully" });
+    res.status(201).json({ message: "Submission recorded successfully (created or updated)" });
   } catch (err) {
     res.status(500).json({ error: "Failed to store leaderboard data" });
   }
-})
+});
 export const getLeaderboard=catchAsyncErr(async(req,res,next)=>{
   const { contestCode } = req.params;
 
