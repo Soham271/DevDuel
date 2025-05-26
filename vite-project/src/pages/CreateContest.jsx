@@ -203,7 +203,10 @@ function CreateContest() {
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
               <ModalMessage>Contest Created Successfully!</ModalMessage>
-              <ModalCode onClick={handleCodeClick} style={{ cursor: "pointer" }}>
+              <ModalCode
+                onClick={handleCodeClick}
+                style={{ cursor: "pointer" }}
+              >
                 {contestCode}
               </ModalCode>
               <CopyNote>Click on code to copy</CopyNote>
