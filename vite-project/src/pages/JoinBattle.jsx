@@ -24,32 +24,7 @@ const languageMap = {
   Python: { id: 71, editorLang: "python" },
   JavaScript: { id: 63, editorLang: "javascript" },
 };
-
-const predefinedFunctions = {
-  javascript: `function solve(input) {
-  // Your code here
-
-}`,
-  python: `def solve(input):
-  # Your code here
-  pass`,
-  java: `public class Solution {
-  public static void solve(String input) {
-    // Your code here
-  }
-}`,
-  cpp: `#include <iostream>
-using namespace std;
-
-void solve(string input) {
-  // Your code here
-}`,
-  c: `#include <stdio.h>
-
-void solve(char *input) {
-  // Your code here
-}`,
-};
+import { useSelector } from "react-redux";
 
 const JoinBattle = () => {
   const location = useLocation();
@@ -65,7 +40,9 @@ const JoinBattle = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
   const [oneMinuteLeftShown, setOneMinuteLeftShown] = useState(false);
+  const [canSubmit, setCanSubmit] = useState(false);
 
+   const user = useSelector((state) => state.user.user);
   useEffect(() => {
     if (!contestCode) {
       setError("No contest code provided.");
@@ -73,7 +50,6 @@ const JoinBattle = () => {
     }
 
     const hasShownToast = sessionStorage.getItem("contestToastShown");
-
     if (!hasShownToast) {
       toast.success("Contest Started, All the best!", {
         position: "top-center",
@@ -116,7 +92,6 @@ const JoinBattle = () => {
         const langObj = languageMap[contestData.Language];
         if (langObj) {
           setLanguage(langObj.editorLang);
-          // Remove predefined function; just load saved code or empty string
           const savedCode = localStorage.getItem("userCode");
           setCode(savedCode || "");
         }
@@ -234,7 +209,6 @@ const JoinBattle = () => {
               status: data.status.description,
             };
           } catch (err) {
-            console.error("Error with test case", index + 1, err);
             return {
               index: index + 1,
               passed: false,
@@ -248,16 +222,11 @@ const JoinBattle = () => {
       );
 
       setRunResults(results);
-
       const allPassed = results.every((r) => r.passed);
+      setCanSubmit(allPassed);
+
       if (allPassed) {
-        toast.success("🎉 All test cases passed! Redirecting...");
-        setTimeout(() => {
-          localStorage.removeItem("contestStartTime");
-          localStorage.removeItem("contestDuration");
-          localStorage.removeItem("userCode");
-          navigate("/contest-ended");
-        }, 2000);
+        toast.success("🎉 All test cases passed! You can now submit.");
       } else {
         toast.info("Some test cases failed.");
       }
@@ -273,19 +242,39 @@ const JoinBattle = () => {
     }
   };
 
+  const handleSubmit = async() => {
+   const endTime = Date.now();
+  const startTime = parseInt(localStorage.getItem("contestStartTime"));
+  const duration = Math.floor((endTime - startTime) / 1000); // in seconds
+
+  const testCasesPassed = runResults.filter((res) => res.passed).length;
+
+  try {
+    await axios.post("http://localhost:3004/api/v1/leaderboard/submit", {
+      userId: user.fullName, 
+      contestCode,
+      timeTaken: duration,
+      testCasesPassed,
+    });
+
+    localStorage.removeItem("contestStartTime");
+    localStorage.removeItem("contestDuration");
+    localStorage.removeItem("userCode");
+
+    navigate("/leaderboard");
+  } catch (err) {
+    toast.error("Failed to submit to leaderboard.");
+    console.error(err);
+  }
+  };
+
   if (error) return <div>{error}</div>;
   if (!contest || !problem) return <div>Loading contest or problem...</div>;
 
   return (
     <PageWrapper>
       <ToastContainer />
-      <ProblemPanel
-        style={{
-          backgroundColor: "#f9f9f9",
-          borderRadius: "8px",
-          padding: "20px",
-        }}
-      >
+      <ProblemPanel style={{ backgroundColor: "#f9f9f9", borderRadius: "8px", padding: "20px" }}>
         <Title>{problem.title}</Title>
         <Description>{problem.description}</Description>
         <FormatText>
@@ -301,19 +290,15 @@ const JoinBattle = () => {
           ⏳ Time Left: {formatTime(timeLeft)}
         </div>
         <div style={{ marginTop: "12px" }}>
-          <span
-            onClick={handleCopyCode}
-            style={{
-              display: "inline-block",
-              padding: "6px 12px",
-              backgroundColor: "#e0e0e0",
-              borderRadius: "10px",
-              border: "1px solid #ccc",
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
-            title="Click to copy"
-          >
+          <span onClick={handleCopyCode} style={{
+            display: "inline-block",
+            padding: "6px 12px",
+            backgroundColor: "#e0e0e0",
+            borderRadius: "10px",
+            border: "1px solid #ccc",
+            fontWeight: 500,
+            cursor: "pointer",
+          }} title="Click to copy">
             📋 Contest Code: {contestCode}
           </span>
         </div>
@@ -342,9 +327,7 @@ const JoinBattle = () => {
             theme: "vs-dark",
           }}
         />
-        <div
-          style={{ marginTop: "10px", display: "flex", alignItems: "center" }}
-        >
+        <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
           <button
             onClick={handleRunAllTestCases}
             disabled={isRunning}
@@ -359,11 +342,26 @@ const JoinBattle = () => {
               fontWeight: "bold",
             }}
           >
-            {isRunning ? "Running..." : "Run All Test Cases"}
+            {isRunning ? "Running..." : "Run"}
           </button>
-          <OutputBox style={{ marginLeft: "15px", flex: 1 }}>
-            {output}
-          </OutputBox>
+
+          <button
+            onClick={handleSubmit}
+            disabled={!canSubmit}
+            style={{
+              padding: "8px 14px",
+              backgroundColor: canSubmit ? "#28a745" : "#aaa",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: canSubmit ? "pointer" : "not-allowed",
+              fontWeight: "bold",
+            }}
+          >
+            Submit
+          </button>
+
+          <OutputBox style={{ flex: 1 }}>{output}</OutputBox>
         </div>
 
         {runResults.length > 0 && (

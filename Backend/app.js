@@ -13,7 +13,7 @@ import { fileURLToPath } from "url";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import codeRoutes from "./router/code.js";
-
+import leaderroute from './router/leaderboard.js'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -54,7 +54,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/contenst", contestRoutes);
 app.use("/api/v1/joinBattle", JoinbattleRoutes);
 app.use("api/v1/code",codeRoutes);
-
+app.use('/api/v1/leaderboard',leaderroute)
 dbConnect();
 
 // Socket.io logic remains unchanged

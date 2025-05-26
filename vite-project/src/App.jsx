@@ -13,7 +13,7 @@ import SignUp from "./pages/SignUp";
 import Home from "./pages/Home";
 import CreateContest from "./pages/CreateContest";
 import JoinBattle from "./pages/JoinBattle";
-import ContestEnded from "./pages/ContestEnded";
+import LeaderBoard from "./pages/Leaderboard";
 import Joincontest from "./pages/Joincontest";
 import { element } from "prop-types";
 import Profile from "./pages/Profile";
@@ -44,8 +44,8 @@ const App = () => {
     },
 
     {
-      path: "/contest-ended",
-      element: <ContestEnded />,
+      path: "/leaderboard",
+      element: <LeaderBoard/>,
     },
     {
       path: "/join-contest",
