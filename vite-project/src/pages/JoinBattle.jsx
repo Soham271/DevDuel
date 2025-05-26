@@ -29,8 +29,9 @@ const JoinBattle = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { contestCode } = location.state || {};
-  const [runResults, setRunResults] = useState([]);
 
+  const [runResults, setRunResults] = useState([]);
+  const [score, setScore] = useState(0);
   const [contest, setContest] = useState(null);
   const [timeLeft, setTimeLeft] = useState(null);
   const [problem, setProblem] = useState(null);
@@ -42,7 +43,6 @@ const JoinBattle = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState(null);
   const [oneMinuteLeftShown, setOneMinuteLeftShown] = useState(false);
-  const [allTestCasesPassed, setAllTestCasesPassed] = useState(false);
 
   useEffect(() => {
     if (!contestCode) {
@@ -74,7 +74,9 @@ const JoinBattle = () => {
         const storedDuration = localStorage.getItem("contestDuration");
 
         if (storedStartTime && storedDuration) {
-          const elapsed = Math.floor((Date.now() - parseInt(storedStartTime)) / 1000);
+          const elapsed = Math.floor(
+            (Date.now() - parseInt(storedStartTime)) / 1000
+          );
           const remaining = parseInt(storedDuration) - elapsed;
           setTimeLeft(Math.max(remaining, 0));
         } else {
@@ -134,7 +136,9 @@ const JoinBattle = () => {
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
     const secsR = secs % 60;
-    return `${mins.toString().padStart(2, "0")}:${secsR.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, "0")}:${secsR
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const handleRunAllTestCases = async () => {
@@ -184,23 +188,40 @@ const JoinBattle = () => {
               {
                 headers: {
                   "Content-Type": "application/json",
-                  "X-RapidAPI-Key": "d01622f8c2msh16e1b9d9c0a8c6cp1e5ef1jsn002af3295742",
+                  "X-RapidAPI-Key":
+                    "d01622f8c2msh16e1b9d9c0a8c6cp1e5ef1jsn002af3295742",
                   "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
                 },
               }
             );
 
-            console.log("Judge0 response:", data);
-
             const passed = data.status.description === "Accepted";
             return {
               index: index + 1,
               passed,
-              output: data.stdout ? atob(data.stdout) : data.stderr ? atob(data.stderr) : "No output",
+              output: data.stdout
+                ? atob(data.stdout)
+                : data.stderr
+                ? atob(data.stderr)
+                : "No output",
               expected: testCase.output,
               input: testCase.input,
               status: data.status.description,
             };
+            await axios.post("http://localhost:5000/submit-code", {
+              userId: localStorage.getItem("userId"), // assuming you store this
+              userFullName: localStorage.getItem("userName"),
+              testCasesPassed: passedCount,
+              timeTaken: contest?.Duration
+                ? contest.Duration.includes("hr")
+                  ? parseInt(contest.Duration) * 3600 - timeLeft
+                  : parseInt(contest.Duration.replace("min", "")) * 60 -
+                    timeLeft
+                : 0,
+              submittedAt: new Date().toISOString(),
+            });
+
+            toast.success("Code submitted and leaderboard updated!");
           } catch (err) {
             console.error("Error with test case", index + 1, err);
             return {
@@ -216,33 +237,36 @@ const JoinBattle = () => {
       );
 
       setRunResults(results);
+      const passedCount = results.filter((r) => r.passed).length;
+      setScore(passedCount);
 
-      const allPassed = results.every((r) => r.passed);
-      setAllTestCasesPassed(allPassed);
-
-      if (allPassed) {
+      if (passedCount === results.length) {
         toast.success("🎉 All test cases passed! You can now submit.");
       } else {
-        toast.info("Some test cases failed.");
+        toast.info(`${passedCount}/${results.length} test cases passed.`);
       }
     } finally {
       setIsRunning(false);
     }
   };
 
-  // New submit handler
   const handleSubmit = () => {
-    if (allTestCasesPassed) {
-      toast.success("Submitting and redirecting...");
-      setTimeout(() => {
-        localStorage.removeItem("contestStartTime");
-        localStorage.removeItem("contestDuration");
-        localStorage.removeItem("userCode");
-        navigate("/leaderboard");
-      }, 1500);
-    } else {
-      toast.error("You must pass all test cases before submitting!");
-    }
+    toast.success("Submitting and redirecting to leaderboard...");
+    setTimeout(() => {
+      localStorage.removeItem("contestStartTime");
+      localStorage.removeItem("contestDuration");
+      localStorage.removeItem("userCode");
+
+      // You can optionally POST score to your backend here
+
+      navigate("/leaderboard", {
+        state: {
+          contestCode,
+          score,
+          totalTestCases: runResults.length,
+        },
+      });
+    }, 1500);
   };
 
   const handleCopyCode = () => {
@@ -348,7 +372,7 @@ const JoinBattle = () => {
               opacity: isRunning ? 0.6 : 1,
             }}
           >
-            Submit
+            Submit & View Score
           </button>
         </div>
 

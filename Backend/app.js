@@ -13,7 +13,8 @@ import { fileURLToPath } from "url";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import codeRoutes from "./router/code.js";
-import leaderroute from './router/leaderboard.js'
+import leaderroute from "./router/leaderboard.js";
+import submitCodeRoutes from "./router/submitCode.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -23,12 +24,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.PORTFOLIO_URL || "http://localhost:3000",
-      process.env.DASHBOARD_URL || "http://localhost:5173",
-      "http://localhost:3000",
-      "http://localhost:5173",
-    ],
+    origin: [process.env.PORTFOLIO_URL, process.env.DASHBOARD_URL],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   },
@@ -36,12 +32,7 @@ const io = new Server(server, {
 
 app.use(
   cors({
-    origin: [
-      process.env.PORTFOLIO_URL || "http://localhost:3000",
-      process.env.DASHBOARD_URL || "http://localhost:5173",
-      "http://localhost:3000",
-      "http://localhost:5173",
-    ],
+    origin: [process.env.PORTFOLIO_URL, process.env.DASHBOARD_URL],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -53,11 +44,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/contenst", contestRoutes);
 app.use("/api/v1/joinBattle", JoinbattleRoutes);
-app.use("api/v1/code",codeRoutes);
-app.use('/api/v1/leaderboard',leaderroute)
+app.use("api/v1/code", codeRoutes);
+app.use("/api/v1/leaderboard", leaderroute);
+app.use("/api/v1/submitCode", submitCodeRoutes(io));
 dbConnect();
 
-// Socket.io logic remains unchanged
 const contestRooms = new Map();
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);

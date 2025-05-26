@@ -3,13 +3,11 @@ import { catchAsyncErr } from "../middleware/catchasyncErr.js";
 import { ErrorHandler } from "../middleware/err.js";
 import problems from "../json-data/problems.js";
 
-
 const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 export const CreateContest = catchAsyncErr(async (req, res, next) => {
   const { Title, Level, Duration, Language, Code } = req.body;
 
- 
   if (!Title || !Level || !Duration || !Language || !Code) {
     return next(new ErrorHandler("All fields are required", 400));
   }
@@ -19,8 +17,9 @@ export const CreateContest = catchAsyncErr(async (req, res, next) => {
     return next(new ErrorHandler("Invalid contest code", 400));
   }
 
-
-  const existingContest = await CreateContestModel.findOne({ Code: codeNumber });
+  const existingContest = await CreateContestModel.findOne({
+    Code: codeNumber,
+  });
   if (existingContest) {
     return next(new ErrorHandler("Contest code already exists", 400));
   }
@@ -30,12 +29,13 @@ export const CreateContest = catchAsyncErr(async (req, res, next) => {
   );
 
   if (filteredQuestions.length === 0) {
-    return next(new ErrorHandler(`No questions found for level: ${Level}`, 400));
+    return next(
+      new ErrorHandler(`No questions found for level: ${Level}`, 400)
+    );
   }
 
   const selectedQuestion = getRandomElement(filteredQuestions);
 
- 
   const contest = await CreateContestModel.create({
     Title,
     Level,
