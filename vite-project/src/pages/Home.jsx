@@ -1,128 +1,186 @@
 import React, { useEffect, useRef } from "react";
-import LocomotiveScroll from "locomotive-scroll/dist/locomotive-scroll";
-
+import LocomotiveScroll from "locomotive-scroll";
 import "locomotive-scroll/dist/locomotive-scroll.css";
-import { useSelector } from "react-redux";
-import Navbar from "./Navbar";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
+import { useSelector } from "react-redux";
+import Navbar from "./Navbar";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Home = () => {
   const scrollRef = useRef(null);
-  const leftImageRef = useRef(null);
-  const rightImageRef = useRef(null);
+  const heroRef = useRef(null);
+  const taglineRef = useRef(null);
   const user = useSelector((state) => state.user.user);
+
+  const aboutRef = useRef(null);
+  const aboutImgRef = useRef(null);
+  const featuresRef = useRef(null);
+  const featuresImgRef = useRef(null);
 
   useEffect(() => {
     const scroll = new LocomotiveScroll({
       el: scrollRef.current,
       smooth: true,
+      lerp: 0.05, // Reduced smoothness for higher refresh rates
     });
 
-    // Locomotive + ScrollTrigger setup
-    setTimeout(() => {
-      ScrollTrigger.scrollerProxy(scrollRef.current, {
-        scrollTop(value) {
-          return arguments.length
-            ? scroll.scrollTo(value, 0, 0)
-            : scroll.scroll.instance.scroll.y;
-        },
-        getBoundingClientRect() {
-          return {
-            top: 0,
-            left: 0,
-            width: window.innerWidth,
-            height: window.innerHeight,
-          };
-        },
-        pinType: scrollRef.current.style.transform ? "transform" : "fixed",
-      });
-
-      ScrollTrigger.addEventListener("refresh", () => scroll.update());
-      ScrollTrigger.refresh();
-    }, 100);
-
-    // Animate left image inward
-    gsap.to(leftImageRef.current, {
-      x: window.innerWidth / 3, // move right
-      scrollTrigger: {
-        trigger: "#scrollSection2",
-        scroller: scrollRef.current,
-        start: "top center",
-        end: "bottom center",
-        scrub: true,
+    ScrollTrigger.scrollerProxy(scrollRef.current, {
+      scrollTop(value) {
+        return arguments.length
+          ? scroll.scrollTo(value, 0, 0)
+          : scroll.scroll.instance.scroll.y;
       },
+      getBoundingClientRect() {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+      },
+      pinType: scrollRef.current.style.transform ? "transform" : "fixed",
     });
 
-    // Animate right image inward
-    gsap.to(rightImageRef.current, {
-      x: -window.innerWidth / 3, // move left
-      scrollTrigger: {
-        trigger: "#scrollSection2",
-        scroller: scrollRef.current,
-        start: "top center",
-        end: "bottom center",
-        scrub: true,
-      },
+    ScrollTrigger.addEventListener("refresh", () => scroll.update());
+    ScrollTrigger.refresh();
+
+    // Hero animation
+    gsap.fromTo(
+      heroRef.current,
+      { opacity: 0, y: 50 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 1.5,
+        ease: "power3.out",
+      }
+    );
+
+    // Tagline animation
+    gsap.to(taglineRef.current, {
+      opacity: 1,
+      y: 0,
+      delay: 1.2,
+      duration: 1,
+      ease: "power2.out",
     });
+
+    // About image animation
+    gsap.fromTo(
+      aboutImgRef.current,
+      { x: "-100%", opacity: 0 },
+      {
+        x: "0%",
+        opacity: 1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: aboutRef.current,
+          scroller: scrollRef.current,
+          start: "top center",
+          end: "bottom center",
+          scrub: 0.5,
+        },
+      }
+    );
+
+    // Features image animation
+    gsap.fromTo(
+      featuresImgRef.current,
+      { x: "100%", opacity: 0 },
+      {
+        x: "10%", // shifted more left
+        opacity: 1,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: featuresRef.current,
+          scroller: scrollRef.current,
+          start: "top center",
+          end: "bottom center",
+          scrub: 0.5,
+        },
+      }
+    );
 
     return () => {
       scroll.destroy();
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      ScrollTrigger.getAll().forEach((t) => t.kill());
     };
   }, []);
 
   return (
     <>
       <Navbar />
-      <div className="pt-24 text-center">
-        <h1 className="text-4xl font-bold">
-          Hello, Welcome to Home: {user?.fullName}
-        </h1>
-      </div>
-
       <div
         data-scroll-container
         ref={scrollRef}
-        className="overflow-hidden font-sans"
+        className="bg-black text-white font-sans overflow-hidden"
       >
-        {/* Section 1 */}
+        {/* Hero Section */}
         <section
           data-scroll-section
-          className="min-h-[150vh] bg-red-400 flex items-center justify-center"
+          className="min-h-screen flex flex-col items-center justify-center text-center px-4"
         >
-          <h1 className="text-white text-5xl font-bold">Section 1</h1>
+          <h1
+            ref={heroRef}
+            className="text-5xl md:text-7xl font-bold leading-tight"
+          >
+            Welcome to <span className="text-purple-500">DevDuels</span>
+          </h1>
+          <p
+            ref={taglineRef}
+            className="text-lg md:text-2xl mt-6 opacity-0 wdxl-lubrifont-tc-regular text-gray-300"
+          >
+            Battle it out in real-time coding contests – Rank. Duel. Conquer.
+          </p>
         </section>
 
-        {/* Section 2 */}
+        {/* About Section */}
         <section
-          id="scrollSection2"
           data-scroll-section
-          className="min-h-[200vh] bg-blue-500 relative"
+          ref={aboutRef}
+          className="min-h-[100vh] px-6 py-24 md:px-20 bg-gray-900 flex flex-col md:flex-row items-center justify-between gap-10"
         >
-          {/* Images pinned to left/right */}
+          <div className="md:w-1/2">
+            <h2 className="text-4xl font-semibold mb-6">What is DevDuels?</h2>
+            <p className="text-lg leading-relaxed">
+              DevDuels is a real-time competitive coding platform where you face
+              other developers in head-to-head programming battles. Build your
+              rank, improve your skills, and climb the leaderboard.
+            </p>
+          </div>
           <img
-            ref={leftImageRef}
-            src="https://unsplash.com/photos/the-american-flag-hangs-in-a-window-83L4JedaBC8"
-            alt="Left"
-            className="absolute top-1/2 left-0 transform -translate-y-1/2"
-          />
-          <img
-            ref={rightImageRef}
-            src="https://unsplash.com/photos/womans-face-peeks-through-large-dark-leaves-mkSLfe1EvbA"
-            alt="Right"
-            className="absolute top-1/2 right-0 transform -translate-y-1/2"
+            ref={aboutImgRef}
+            src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61"
+            alt="About DevDuels"
+            className="md:w-1/2 rounded-xl shadow-xl object-cover h-80 w-full"
           />
         </section>
 
-        {/* Section 3 */}
+        {/* Features Section */}
         <section
           data-scroll-section
-          className="min-h-[180vh] bg-green-500 flex items-center justify-center"
+          ref={featuresRef}
+          className="min-h-[100vh] px-6 py-24 md:px-20 bg-black flex flex-col md:flex-row-reverse items-center justify-between gap-10"
         >
-          <h1 className="text-white text-5xl font-bold">Section 3</h1>
+          <div className="md:w-1/2">
+            <h2 className="text-4xl font-semibold mb-6">Key Features</h2>
+            <ul className="list-disc ml-6 text-lg space-y-3">
+              <li>Live 1v1 Duels with Real-Time Feedback</li>
+              <li>Multiple Languages and Difficulty Levels</li>
+              <li>Built-in Code Editor and Timer</li>
+              <li>Matchmaking and Custom Rooms</li>
+              <li>Global Leaderboard and Rankings</li>
+            </ul>
+          </div>
+          <img
+            ref={featuresImgRef}
+            src="https://images.unsplash.com/photo-1554306274-f23873d9a26c?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            alt="Features"
+            className="md:w-[40%] w-full rounded-xl shadow-xl object-cover h-80 mr-0 md:mr-6"
+          />
+
         </section>
       </div>
     </>

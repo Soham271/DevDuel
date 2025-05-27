@@ -40,3 +40,11 @@
 .read-the-docs {
   color: #888;
 }
+
+
+/* in your global CSS (e.g., index.css or App.css) */
+.wdxl-lubrifont-tc-regular {
+  font-family: "WDXL Lubrifont TC", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
