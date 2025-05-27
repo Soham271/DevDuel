@@ -8,6 +8,7 @@ export const Container = styled(motion.div)`
   padding: 2.5rem;
   border-radius: 12px;
   background-color: #fff;
+  
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   font-family: "Segoe UI", sans-serif;
 `;
