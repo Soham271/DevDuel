@@ -20,6 +20,7 @@ import Profile from "./pages/Profile";
 import EditProfile from "./pages/EditProfile";
 import ForgetPassword from "./pages/ForgetPassword";
 import ResetPassword from "./pages/Reset-Password";
+import Details from "./pages/Details";
 const App = () => {
   const router = createBrowserRouter([
     {
@@ -67,6 +68,10 @@ const App = () => {
       path: "/password/reset/:token",
       element: <ResetPassword />,
     },
+    {
+      path:"/details",
+      element:<Details/>
+    }
   ]);
 
   return (

@@ -139,23 +139,29 @@ export const {
 export const login = (email, password) => async (dispatch) => {
   dispatch(loginRequested());
   try {
+    if (!email || !password) {
+      throw new Error("Email and password are required");
+    }
+    console.log("Login request payload:", { email, password }); // Debug
     const { data } = await axios.post(
       "http://localhost:3004/api/v1/user/login",
       { email, password },
       {
         withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       }
     );
+    console.log("Login response:", data); // Debug
+    localStorage.setItem("token", data.token);
     dispatch(loginSuccess(data.user));
     dispatch(clearAllError());
   } catch (error) {
-    dispatch(loginFailed(error.response?.data?.message || "Login failed"));
+    const errorMessage =
+      error.response?.data?.message || error.message || "Login failed";
+    console.error("Login error:", errorMessage); // Debug
+    dispatch(loginFailed(errorMessage));
   }
 };
-
 export const GetMyProfile = () => async (dispatch) => {
   dispatch(GetMyProfileLoading());
   try {

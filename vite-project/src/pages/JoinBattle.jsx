@@ -1,4 +1,3 @@
-// ... imports remain the same
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -13,7 +12,7 @@ import {
   FormatText,
   OutputBox,
 } from "@/components/StyledComponents";
-import CustomButton from "@/components/CustomButton";
+
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -86,10 +85,17 @@ const JoinBattle = () => {
           setTimeLeft(duration);
         }
 
+        // Filter problems by difficulty
         const filtered = problems.filter(
           (p) => p.difficulty.toLowerCase() === contestData.Level.toLowerCase()
         );
-        if (filtered.length > 0) setProblem(filtered[0]);
+        if (filtered.length > 0) {
+          // Select a random problem from the filtered list
+          const randomIndex = Math.floor(Math.random() * filtered.length);
+          setProblem(filtered[randomIndex]);
+        } else {
+          setError("No problems found for the contest difficulty level.");
+        }
 
         const langObj = languageMap[contestData.Language];
         if (langObj) {
@@ -151,7 +157,7 @@ const JoinBattle = () => {
     const languageId = langEntry?.[1]?.id;
 
     if (!problem || !code || !languageId) {
-      toast.error("Missing code, language or problem.");
+      toast.error("Missing code, language, or problem.");
       setIsRunning(false);
       return;
     }
@@ -208,20 +214,6 @@ const JoinBattle = () => {
               input: testCase.input,
               status: data.status.description,
             };
-            await axios.post("http://localhost:5000/submit-code", {
-              userId: localStorage.getItem("userId"), // assuming you store this
-              userFullName: localStorage.getItem("userName"),
-              testCasesPassed: passedCount,
-              timeTaken: contest?.Duration
-                ? contest.Duration.includes("hr")
-                  ? parseInt(contest.Duration) * 3600 - timeLeft
-                  : parseInt(contest.Duration.replace("min", "")) * 60 -
-                    timeLeft
-                : 0,
-              submittedAt: new Date().toISOString(),
-            });
-
-            toast.success("Code submitted and leaderboard updated!");
           } catch (err) {
             console.error("Error with test case", index + 1, err);
             return {
@@ -250,23 +242,56 @@ const JoinBattle = () => {
     }
   };
 
-  const handleSubmit = () => {
-    toast.success("Submitting and redirecting to leaderboard...");
-    setTimeout(() => {
-      localStorage.removeItem("contestStartTime");
-      localStorage.removeItem("contestDuration");
-      localStorage.removeItem("userCode");
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token");
+    console.log("Token being sent:", token); // Debug
+    if (!token) {
+      toast.error("Please log in to submit.");
+      navigate("/login");
+      return;
+    }
+    if (runResults.length === 0) {
+      toast.error("Please run test cases before submitting.");
+      return;
+    }
 
-      // You can optionally POST score to your backend here
+    const passedCount = runResults.filter((r) => r.passed).length;
+    const totalTestCases = runResults.length;
 
-      navigate("/leaderboard", {
-        state: {
-          contestCode,
-          score,
-          totalTestCases: runResults.length,
+    try {
+      await axios.post(
+        "http://localhost:3004/api/v1/details/create",
+        {
+          Contest_id: contestCode,
+          Score: passedCount,
+          TotalScore: totalTestCases,
+          Language: contest?.Language || languageMap[language]?.editorLang,
         },
-      });
-    }, 1500);
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          withCredentials: true,
+        }
+      );
+
+      toast.success("Details saved successfully! Redirecting to leaderboard...");
+      setTimeout(() => {
+        localStorage.removeItem("contestStartTime");
+        localStorage.removeItem("contestDuration");
+        localStorage.removeItem("userCode");
+        navigate("/leaderboard", {
+          state: {
+            contestCode,
+            score: passedCount,
+            totalTestCases,
+          },
+        });
+      }, 1500);
+    } catch (err) {
+      console.error("Error saving details:", err.response?.data || err.message);
+      toast.error("Failed to save contest details.");
+    }
   };
 
   const handleCopyCode = () => {

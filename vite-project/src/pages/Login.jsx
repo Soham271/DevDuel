@@ -1,8 +1,8 @@
+
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import styled from "styled-components";
-
 import {
   Card,
   CardContent,
@@ -16,36 +16,35 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { login, clearAllUserError } from "@/Store/UserSlice";
 import { toast } from "react-toastify";
-
-// Firebase
-import { auth } from "../firebase/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../firebase/firebase";
 
 const Login = () => {
   const [user, setUser] = useState({ email: "", password: "" });
-  const { loading, isAuthenticated, error } = useSelector(
-    (state) => state.user
-  );
+  const { loading, isAuthenticated, error } = useSelector((state) => state.user);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // JWT Email/Password Login
-  const handleJWTLogin = () => {
+  const handleJWTLogin = async (e) => {
+    e.preventDefault();
+    if (!user.email || !user.password) {
+      toast.error("Please provide both email and password");
+      return;
+    }
     try {
-      dispatch(login(user.email, user.password));
+      await dispatch(login(user.email, user.password)).unwrap();
+      toast.success("Login successful!");
     } catch (err) {
-      toast.error(err || "login Failed");
+      toast.error(err || "Login failed");
     }
   };
 
-  // Firebase Google Auth
   const handleGoogleLogin = async () => {
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
       const name = result.user.displayName;
-
       toast.success(`Welcome ${name}!`);
       navigate("/home");
     } catch (error) {
@@ -59,9 +58,7 @@ const Login = () => {
       toast.error(error);
       dispatch(clearAllUserError());
     }
-
     if (isAuthenticated) {
-      toast.success("Login successful!");
       navigate("/home");
     }
   }, [error, isAuthenticated, dispatch, navigate]);
@@ -74,19 +71,14 @@ const Login = () => {
           <p className="tagline">Unleash Your Skills. Challenge the World.</p>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleJWTLogin();
-          }}
-        >
+        <form onSubmit={handleJWTLogin}>
           <div className="user-box">
             <input
               required
               name="email"
               type="email"
               value={user.email}
-              onChange={(e) => setUser({ ...user, email: e.target.value })}
+              onChange={(e) => setUser({ ...user, email: e.target.value.trim() })}
             />
             <label>Email</label>
           </div>
@@ -103,12 +95,16 @@ const Login = () => {
           </div>
 
           <div className="button-group">
-            <button type="submit" className="submit-button">
+            <button
+              type="submit"
+              className="submit-button"
+              disabled={loading || !user.email || !user.password}
+            >
               <span></span>
               <span></span>
               <span></span>
               <span></span>
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
           </div>
 

@@ -15,6 +15,7 @@ import { createServer } from "http";
 import codeRoutes from "./router/code.js";
 import leaderroute from "./router/leaderboard.js";
 import submitCodeRoutes from "./router/submitCode.js";
+import detailsrouter from './router/details.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -47,6 +48,7 @@ app.use("/api/v1/joinBattle", JoinbattleRoutes);
 app.use("api/v1/code", codeRoutes);
 app.use("/api/v1/leaderboard", leaderroute);
 app.use("/api/v1/submitCode", submitCodeRoutes(io));
+app.use("/api/v1/details", detailsrouter);
 dbConnect();
 
 const contestRooms = new Map();
