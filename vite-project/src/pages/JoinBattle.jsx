@@ -12,7 +12,6 @@ import {
   FormatText,
   OutputBox,
 } from "@/components/StyledComponents";
-
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -85,14 +84,22 @@ const JoinBattle = () => {
           setTimeLeft(duration);
         }
 
-        // Filter problems by difficulty
+        // Load problem from localStorage or select new one
+        const storedProblemId = localStorage.getItem(`problem_${contestCode}`);
         const filtered = problems.filter(
           (p) => p.difficulty.toLowerCase() === contestData.Level.toLowerCase()
         );
         if (filtered.length > 0) {
-          // Select a random problem from the filtered list
-          const randomIndex = Math.floor(Math.random() * filtered.length);
-          setProblem(filtered[randomIndex]);
+          let selectedProblem;
+          if (storedProblemId) {
+            selectedProblem = filtered.find((p) => p.id === storedProblemId);
+          }
+          if (!selectedProblem) {
+            const randomIndex = Math.floor(Math.random() * filtered.length);
+            selectedProblem = filtered[randomIndex];
+            localStorage.setItem(`problem_${contestCode}`, selectedProblem.id);
+          }
+          setProblem(selectedProblem);
         } else {
           setError("No problems found for the contest difficulty level.");
         }
@@ -128,6 +135,7 @@ const JoinBattle = () => {
           localStorage.removeItem("contestStartTime");
           localStorage.removeItem("contestDuration");
           localStorage.removeItem("userCode");
+          localStorage.removeItem(`problem_${contestCode}`);
           navigate("/contest-ended");
           return 0;
         }
@@ -137,7 +145,7 @@ const JoinBattle = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeLeft, navigate, oneMinuteLeftShown]);
+  }, [timeLeft, navigate, oneMinuteLeftShown, contestCode]);
 
   const formatTime = (secs) => {
     const mins = Math.floor(secs / 60);
@@ -258,13 +266,28 @@ const JoinBattle = () => {
     const passedCount = runResults.filter((r) => r.passed).length;
     const totalTestCases = runResults.length;
 
+    // Fetch user details (assuming stored in localStorage or Redux)
+    const user = JSON.parse(localStorage.getItem("user")) || {};
+    const userId = user._id || "anonymous";
+    const userFullName = user.fullName || "Anonymous User";
+
+    // Calculate timeTaken (e.g., elapsed time since contest start)
+    const storedStartTime =
+      parseInt(localStorage.getItem("contestStartTime")) || Date.now();
+    const timeTaken = Math.floor((Date.now() - storedStartTime) / 1000); // Time in seconds
+
     try {
       await axios.post(
         "http://localhost:3004/api/v1/details/create",
         {
-          Contest_id: contestCode,
+          userId,
+          userFullName,
+          testCasesPassed: passedCount,
           Score: passedCount,
           TotalScore: totalTestCases,
+          timeTaken,
+          submittedAt: new Date().toISOString(),
+          Contest_id: contestCode,
           Language: contest?.Language || languageMap[language]?.editorLang,
         },
         {
@@ -275,11 +298,14 @@ const JoinBattle = () => {
         }
       );
 
-      toast.success("Details saved successfully! Redirecting to leaderboard...");
+      toast.success(
+        "Details saved successfully! Redirecting to leaderboard..."
+      );
       setTimeout(() => {
         localStorage.removeItem("contestStartTime");
         localStorage.removeItem("contestDuration");
         localStorage.removeItem("userCode");
+        localStorage.removeItem(`problem_${contestCode}`);
         navigate("/leaderboard", {
           state: {
             contestCode,
@@ -290,7 +316,9 @@ const JoinBattle = () => {
       }, 1500);
     } catch (err) {
       console.error("Error saving details:", err.response?.data || err.message);
-      toast.error("Failed to save contest details.");
+      toast.error(
+        err.response?.data?.error || "Failed to save contest details."
+      );
     }
   };
 

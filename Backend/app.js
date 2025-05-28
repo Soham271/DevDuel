@@ -1,4 +1,3 @@
-// index.js
 import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
@@ -15,7 +14,9 @@ import { createServer } from "http";
 import codeRoutes from "./router/code.js";
 import leaderroute from "./router/leaderboard.js";
 import submitCodeRoutes from "./router/submitCode.js";
-import detailsrouter from './router/details.js';
+import detailsrouter from "./router/details.js";
+import Details from "./model/DetailsScheme.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -45,7 +46,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/contenst", contestRoutes);
 app.use("/api/v1/joinBattle", JoinbattleRoutes);
-app.use("api/v1/code", codeRoutes);
+app.use("/api/v1/code", codeRoutes);
 app.use("/api/v1/leaderboard", leaderroute);
 app.use("/api/v1/submitCode", submitCodeRoutes(io));
 app.use("/api/v1/details", detailsrouter);
@@ -55,7 +56,7 @@ const contestRooms = new Map();
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("joinContest", (data) => {
+  socket.on("joinContest", async (data) => {
     const { contestCode, userId } = data;
     socket.join(contestCode);
     console.log(`User ${userId} joined contest ${contestCode}`);
@@ -64,6 +65,16 @@ io.on("connection", (socket) => {
       contestRooms.set(contestCode, new Set());
     }
     contestRooms.get(contestCode).add(userId);
+
+    try {
+      const leaderboardData = await Details.find({ Contest_id: contestCode })
+        .sort({ testCasesPassed: -1, timeTaken: 1 })
+        .lean();
+      socket.emit("leaderboardUpdate", leaderboardData); // Send to joining user
+    } catch (error) {
+      console.error("Error fetching leaderboard for new user:", error);
+      socket.emit("leaderboardUpdate", []); // Send empty array on error
+    }
 
     io.to(contestCode).emit("userJoined", { userId, contestCode });
     io.to(contestCode).emit("userList", {

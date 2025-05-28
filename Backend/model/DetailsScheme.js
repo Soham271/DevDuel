@@ -6,7 +6,7 @@ const DetailsSchema = new mongoose.Schema({
   Score: { type: Number, required: true },
   TotalScore: { type: Number, required: true },
   Language: { type: String, required: true },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, 
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   submittedAt: { type: Date, default: Date.now },
 });
 
