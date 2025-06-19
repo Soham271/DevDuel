@@ -3,14 +3,15 @@ import { useSelector } from "react-redux";
 import io from "socket.io-client";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
+import { func } from "joi";
 const LeaderboardTable = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const user = useSelector((state) => state.user.user);
   const location = useLocation();
   const { contestCode } = location.state || {};
   const TOTAL_SCORE = 10;
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (!contestCode) {
       console.error("No contestCode provided for leaderboard");
@@ -68,7 +69,9 @@ const LeaderboardTable = () => {
       socket.disconnect();
     };
   }, [contestCode, user?._id]);
-
+  function handlehello(e) {
+    navigate("/details");
+  }
   return (
     <div className="max-w-6xl mx-auto p-6" data-scroll-section>
       <h2 className="text-4xl font-bold mb-8 text-center text-black">
@@ -128,6 +131,14 @@ const LeaderboardTable = () => {
           </tbody>
         </table>
       </div>
+      <br />
+      <br />
+      <button
+        onClick={handlehello}
+        className="size-16 bg-slate-800 text-rose-50"
+      >
+        Contest Details
+      </button>
     </div>
   );
 };

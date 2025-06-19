@@ -62,6 +62,7 @@ const JoinBattle = () => {
       .get(`http://localhost:3004/api/v1/joinBattle/contest/${contestCode}`)
       .then((res) => {
         const contestData = res.data.contest;
+        console.log("Contest Data:", contestData); // Debug
         setContest(contestData);
 
         const duration = contestData.Duration.includes("hr")
@@ -84,37 +85,65 @@ const JoinBattle = () => {
           setTimeLeft(duration);
         }
 
-        // Load problem from localStorage or select new one
-        const storedProblemId = localStorage.getItem(`problem_${contestCode}`);
-        const filtered = problems.filter(
-          (p) => p.difficulty.toLowerCase() === contestData.Level.toLowerCase()
-        );
-        if (filtered.length > 0) {
-          let selectedProblem;
-          if (storedProblemId) {
-            selectedProblem = filtered.find((p) => p.id === storedProblemId);
-          }
-          if (!selectedProblem) {
-            const randomIndex = Math.floor(Math.random() * filtered.length);
-            selectedProblem = filtered[randomIndex];
-            localStorage.setItem(`problem_${contestCode}`, selectedProblem.id);
-          }
-          setProblem(selectedProblem);
-        } else {
-          setError("No problems found for the contest difficulty level.");
+        // Check if problems array is valid
+        if (!problems || problems.length === 0) {
+          setError("No problems available in the system.");
+          return;
         }
+
+        // Select a problem
+        let selectedProblem = null;
+
+        if (contestData.problemId) {
+          console.log("Problems Array:", problems); // Debug
+          selectedProblem = problems.find(
+            (p) => String(p.id) === String(contestData.problemId)
+          );
+          console.log("Selected Problem:", selectedProblem); // Debug
+        }
+
+        // Fallback if problemId is not provided or not found
+        if (!selectedProblem) {
+          const filteredProblems = problems.filter(
+            (p) =>
+              p.difficulty.toLowerCase() === contestData.Level.toLowerCase()
+          );
+
+          if (filteredProblems.length === 0) {
+            setError("No problems found for the contest difficulty level.");
+            return;
+          }
+
+          // Deterministic selection based on contestCode
+          const hash = contestCode
+            .split("")
+            .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+          const problemIndex = hash % filteredProblems.length;
+          selectedProblem = filteredProblems[problemIndex];
+        }
+
+        setProblem(selectedProblem);
 
         const langObj = languageMap[contestData.Language];
         if (langObj) {
           setLanguage(langObj.editorLang);
+        } else {
+          setError("Unsupported language selected for the contest.");
         }
       })
       .catch((err) => {
-        console.error(err);
-        setError("Failed to load contest.");
+        console.error("Failed to fetch contest details:", err);
+        if (err.code === "ERR_NETWORK") {
+          setError(
+            "Cannot connect to the server. Please ensure the backend server is running."
+          );
+        } else if (err.response?.status === 404) {
+          setError("Contest not found. Please check the contest code.");
+        } else {
+          setError("Failed to load contest. Please try again later.");
+        }
       });
   }, [contestCode]);
-
   useEffect(() => {
     if (!timeLeft && timeLeft !== 0) return;
 
@@ -135,7 +164,6 @@ const JoinBattle = () => {
           localStorage.removeItem("contestStartTime");
           localStorage.removeItem("contestDuration");
           localStorage.removeItem("userCode");
-          localStorage.removeItem(`problem_${contestCode}`);
           navigate("/contest-ended");
           return 0;
         }
@@ -252,7 +280,7 @@ const JoinBattle = () => {
 
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
-    console.log("Token being sent:", token); // Debug
+    console.log("Token being sent:", token);
     if (!token) {
       toast.error("Please log in to submit.");
       navigate("/login");
@@ -266,15 +294,13 @@ const JoinBattle = () => {
     const passedCount = runResults.filter((r) => r.passed).length;
     const totalTestCases = runResults.length;
 
-    // Fetch user details (assuming stored in localStorage or Redux)
     const user = JSON.parse(localStorage.getItem("user")) || {};
     const userId = user._id || "anonymous";
     const userFullName = user.fullName || "Anonymous User";
 
-    // Calculate timeTaken (e.g., elapsed time since contest start)
     const storedStartTime =
       parseInt(localStorage.getItem("contestStartTime")) || Date.now();
-    const timeTaken = Math.floor((Date.now() - storedStartTime) / 1000); // Time in seconds
+    const timeTaken = Math.floor((Date.now() - storedStartTime) / 1000);
 
     try {
       await axios.post(
@@ -305,7 +331,6 @@ const JoinBattle = () => {
         localStorage.removeItem("contestStartTime");
         localStorage.removeItem("contestDuration");
         localStorage.removeItem("userCode");
-        localStorage.removeItem(`problem_${contestCode}`);
         navigate("/leaderboard", {
           state: {
             contestCode,

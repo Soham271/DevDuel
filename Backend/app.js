@@ -58,37 +58,64 @@ io.on("connection", (socket) => {
 
   socket.on("joinContest", async (data) => {
     const { contestCode, userId } = data;
+
+    if (!contestCode || !userId) {
+      console.error("Invalid joinContest data:", data);
+      socket.emit("error", { message: "Invalid contest code or user ID" });
+      return;
+    }
+
     socket.join(contestCode);
     console.log(`User ${userId} joined contest ${contestCode}`);
 
     if (!contestRooms.has(contestCode)) {
       contestRooms.set(contestCode, new Set());
     }
-    contestRooms.get(contestCode).add(userId);
+
+    contestRooms.get(contestCode).add({ userId, socketId: socket.id });
 
     try {
       const leaderboardData = await Details.find({ Contest_id: contestCode })
         .sort({ testCasesPassed: -1, timeTaken: 1 })
         .lean();
-      socket.emit("leaderboardUpdate", leaderboardData); // Send to joining user
+      socket.emit("leaderboardUpdate", leaderboardData);
     } catch (error) {
       console.error("Error fetching leaderboard for new user:", error);
-      socket.emit("leaderboardUpdate", []); // Send empty array on error
+      socket.emit("leaderboardUpdate", []);
     }
 
     io.to(contestCode).emit("userJoined", { userId, contestCode });
+
+    // Add defensive check before Array.from
+    const users = contestRooms.get(contestCode);
+    if (!users) {
+      console.error(
+        `Contest room ${contestCode} not found after initialization`
+      );
+      io.to(contestCode).emit("userList", { users: [] });
+      return;
+    }
+
     io.to(contestCode).emit("userList", {
-      users: Array.from(contestRooms.get(contestCode)),
+      users: Array.from(users).map((user) => user.userId),
     });
   });
 
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
     contestRooms.forEach((users, contestCode) => {
-      if (users.has(socket.id)) {
-        users.delete(socket.id);
+      let userToRemove = null;
+      for (const user of users) {
+        if (user.socketId === socket.id) {
+          userToRemove = user;
+          break;
+        }
+      }
+
+      if (userToRemove) {
+        users.delete(userToRemove);
         io.to(contestCode).emit("userList", {
-          users: Array.from(users),
+          users: Array.from(users).map((user) => user.userId),
         });
         if (users.size === 0) {
           contestRooms.delete(contestCode);

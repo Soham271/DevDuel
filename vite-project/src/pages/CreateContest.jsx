@@ -5,6 +5,7 @@ import axios from "axios";
 import gsap from "gsap";
 import Navbar from "./Navbar";
 import TermsModal from "@/components/TermsModal";
+import problems from "@/json-data/problems";
 
 function CreateContest() {
   const user = useSelector((state) => state.user.user);
@@ -83,13 +84,36 @@ function CreateContest() {
       alert("Please accept the Terms and Conditions to create a contest.");
       return;
     }
+
+    // Generate a contest code
     const code = Math.floor(10000000 + Math.random() * 90000000);
     setContestCode(code);
 
+    // Select a problem based on difficulty level
+    const filteredProblems = problems.filter(
+      (p) =>
+        p.difficulty.toLowerCase() === createContestData.Level.toLowerCase()
+    );
+
+    if (filteredProblems.length === 0) {
+      alert("No problems available for the selected difficulty level.");
+      return;
+    }
+
+    // Randomly select a problem
+    const randomIndex = Math.floor(Math.random() * filteredProblems.length);
+    const selectedProblem = filteredProblems[randomIndex];
+    const problemId = selectedProblem.id;
+
     try {
+      // Send the contest data to the backend, including the problemId
       await axios.post(
         "http://localhost:3004/api/v1/contenst/create-contest",
-        { ...createContestData, Code: code },
+        {
+          ...createContestData,
+          Code: code,
+          problemId: problemId, // Include the problemId
+        },
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
@@ -99,6 +123,7 @@ function CreateContest() {
       setShowModal(true);
     } catch (err) {
       console.error("Error creating contest:", err);
+      alert("Failed to create contest. Please try again.");
     }
   };
 
@@ -108,7 +133,8 @@ function CreateContest() {
     setTimeout(() => {
       setCopied(false);
       setShowModal(false);
-      navigate("/Join-Battle", { state: { contestCode } });
+      // Pass contestCode as a string to JoinBattle
+      navigate("/join-battle", { state: { contestCode: String(contestCode) } });
     }, 1500);
   };
 
