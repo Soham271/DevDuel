@@ -2,8 +2,6 @@
 
 Unleash Creativity, Conquer Challenges, Elevate Competition
 
-- **Last commit**: last thursday
-- **Languages**: JavaScript 97.4%, languages 3
 
 ## Built with the tools and technologies:
 
@@ -34,6 +32,8 @@ Unleash Creativity, Conquer Challenges, Elevate Competition
   - [Installation](#installation)
   - [Usage](#usage)
   - [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Overview
 
